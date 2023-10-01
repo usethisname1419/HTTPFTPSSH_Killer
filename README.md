@@ -16,7 +16,7 @@ A tool to perform brute-force attacks against SSH and FTP services.
 
 `git clone https://github.com/usethisname1419/FTPSSH_Killer.git`
 
-`cd [FTPSSH_Killer]`
+`cd FTPSSH_Killer`
 
 
 3. Install the required libraries:
@@ -26,7 +26,7 @@ A tool to perform brute-force attacks against SSH and FTP services.
 
 ## Usage
 
-`python [script_name].py --service [ftp/ssh] -w [path_to_wordlist] -u [path_to_user_list] --ip [target_ip_address]`
+`python FSspray.py --service [ftp/ssh] -w [path_to_wordlist] -u [path_to_user_list] --ip [target_ip_address]`
 
 
 You can also use the `--tor` flag to route your requests through Tor for added anonymity.
