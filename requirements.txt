@@ -1,0 +1,4 @@
+paramiko
+colorama
+requests
+socks
