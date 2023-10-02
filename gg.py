@@ -159,10 +159,11 @@ if __name__ == '__main__':
 
         password_chunk_size = 3
         first_iteration = True
+        proxy_index = 0
         for i in range(0, len(passwords), password_chunk_size):
             for idx, user in enumerate(users):
                 proxy_ip, proxy_port = proxies[i % len(proxies)] if proxies else (None, None)
-
+                proxy_index += 1
                 if proxy_ip:
                     print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Using proxy {proxy_ip}:{proxy_port}")
 
