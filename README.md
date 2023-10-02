@@ -28,8 +28,9 @@ A tool to perform brute-force attacks against SSH and FTP services.
 
 `python FSspray.py --service [ftp/ssh] -w [path_to_wordlist] -u [path_to_user_list] --ip [target_ip_address]`
 
+You can load proxies from a list using the `--proxies` flag. 
 
-You can also use the `--tor` flag to route your requests through Tor for added anonymity.
+You can also use the `--tor` flag to route your requests through Tor.
 
 ## Support
 
