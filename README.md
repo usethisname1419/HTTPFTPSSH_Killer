@@ -1,13 +1,18 @@
 # FTPSSH_Killer
 
-Final Version FSK.py
+Introducing FSK – your sophisticated brute-forcing tool tailored for SSH and FTP services. Unlike conventional brute-forcing, FSK emulates the "password spraying" approach by attempting three passwords per user. Once it exhausts the user list, it resumes by cycling through the next set of three passwords.
 
-This tool conducts a spraying agaisnt etiher FTP or SSH. Because it tries only 3 passwords per username it can bypass lockouts 
-It will write all found passwords in 'Credentials.txt'
+Key Features:
 
-# BruteForcer
+1. Target Selection: The tool grants users the flexibility to pick between FTP and SSH services for their attack.
 
-A tool to perform brute-force attacks against SSH and FTP services.
+2. Password Options: Opt between using a predetermined wordlist or generating random passwords on-the-fly. If randomness entices you, BruteSpray can concoct passwords ranging between 8 to 16 characters.
+
+3. Anonymization: Cover your tracks. With BruteSpray, you can route your traffic through Tor or select from a personalized list of proxies.
+
+4. Detailed Reporting: Stay informed. Post-attack, BruteSpray provides a concise report detailing the duration of the attack and the number of attempts made.
+
+
 
 ## Disclaimer
 
