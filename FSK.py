@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 import argparse
 import time
 import paramiko
@@ -28,7 +27,7 @@ def generate_random_password_list(num_passwords=100000):
         password = ''.join(random.choice(characters) for i in range(random.randint(8, 16)))
         passwords.add(password)
 
-    # Save to a temporary file and return its name
+
     with tempfile.NamedTemporaryFile(delete=False, mode='w') as tmp:
         for password in passwords:
             tmp.write(password + "\n")
@@ -81,13 +80,21 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='Brute force against SSH and FTP services.')
     parser.add_argument('--service', required=True, choices=['ftp', 'ssh'],
                         help="Service to attack. Choose 'ftp' or 'ssh'.")
-    parser.add_argument('-w', '--wordlist', required=True, help="Password Wordlist.")
-    parser.add_argument('-r', '--rand', action='store_true', help="Use a random password between 8 and 16 characters.")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-w', '--wordlist', help="Password Wordlist.")
+    group.add_argument('-r', '--rand', action='store_true', help="Use a random password between 8 and 16 characters.")
     parser.add_argument('-u', '--users', required=True, help="File containing a list of usernames.")
     parser.add_argument('--ip', required=True, type=str, help="IP address of the target.")
     parser.add_argument('--tor', action='store_true', help="Use Tor for anonymization")
     parser.add_argument('--proxies', type=str, help="File containing a list of proxies.")
-    return parser.parse_args()
+    args = parser.parse_args()
+
+    if args.wordlist and args.rand:
+        parser.error("You can't use both -w and -r at the same time. Choose one.")
+    elif not args.wordlist and not args.rand:
+        parser.error("You must provide one of -w or -r.")
+
+    return args
 
 
 def save_to_file(ip, service, user, password):
@@ -194,7 +201,7 @@ if __name__ == '__main__':
         args = parse_arguments()
 
         if args.rand:
-            args.wordlist = generate_random_password_list()  
+            args.wordlist = generate_random_password_list()
 
         if args.tor and args.proxies:
             print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} You cannot use both Tor and a proxy file at the same time!")
@@ -215,7 +222,7 @@ if __name__ == '__main__':
         first_iteration = True
         proxy_gen = None
         if proxies:
-            proxy_gen = cycle_through_proxies(proxies)  
+            proxy_gen = cycle_through_proxies(proxies)
 
         for i in range(0, len(passwords), password_chunk_size):
             for idx, user in enumerate(users):
@@ -254,6 +261,9 @@ if __name__ == '__main__':
 
         print(current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.BLUE} Brute force completed.")
 
+        if args.rand:
+            os.remove(args.wordlist)
+
     except KeyboardInterrupt:
         print("\n", current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} ATTACK STOPPED")
         exit(0)
@@ -261,5 +271,3 @@ if __name__ == '__main__':
         print("\n", current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Unexpected End of File (EOF) encountered. Exiting.")
         exit(1)
 
-if args.rand:
-    os.remove(args.wordlist)  
