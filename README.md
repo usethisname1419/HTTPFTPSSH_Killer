@@ -1,5 +1,7 @@
 # FTPSSH_Killer
 
+Final Version FSK.py
+
 This tool conducts a spraying agaisnt etiher FTP or SSH. Because it tries only 3 passwords per username it can bypass lockouts 
 It will write all found passwords in 'Credentials.txt'
 
@@ -27,7 +29,7 @@ A tool to perform brute-force attacks against SSH and FTP services.
 
 ## Usage
 
-`python FSspray.py --service [ftp/ssh] -w [path_to_wordlist] -u [path_to_user_list] --ip [target_ip_address]`
+`python FSK.py --service [ftp/ssh] -w [path_to_wordlist] -u [path_to_user_list] --ip [target_ip_address]`
 
 You can load proxies from a list using the `--proxies` flag. 
 
