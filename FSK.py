@@ -174,8 +174,8 @@ if __name__ == '__main__':
             print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Loading proxies from file ....")
             proxies = load_proxies_from_file(args.proxies)
 
-        passwords = [line.strip() for line in open(args.wordlist, 'r').readlines()]
-        users = [line.strip() for line in open(args.users, 'r').readlines()]
+        passwords = [line.strip() for line in open(args.wordlist, 'r', encoding='latin-1').readlines()]
+        users = [line.strip() for line in open(args.users, 'r', encoding='latin-1').readlines()]
 
         password_chunk_size = 3
         first_iteration = True
