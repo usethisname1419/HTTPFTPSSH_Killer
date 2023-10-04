@@ -36,6 +36,8 @@ Key Features:
 
 `python FSK.py --service [ftp/ssh] -w [path_to_wordlist] -u [path_to_user_list] --ip [target_ip_address]`
 
+To use random passwords use the flag `-r` or `--rand`
+
 You can load proxies from a list using the `--proxies` flag. 
 
 You can also use the `--tor` flag to route your requests through Tor.
