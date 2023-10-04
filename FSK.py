@@ -247,13 +247,13 @@ if __name__ == '__main__':
                     if args.service == 'ssh':
                         if handle_timeout(ssh_attack, args.ip, user, password, proxy_ip, proxy_port):
                             print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for {Fore.RESET}[*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN} {password} {Fore.RESET}in [{time_elapsed:.2f}] seconds with [{attempt_count}] tries.")
-
+                            save_to_file(args.ip, args.service, user, password)
                             users.remove(user)
                             break
                     elif args.service == 'ftp':
                         if handle_timeout(ftp_attack, args.ip, user, password, proxy_ip, proxy_port):
                             print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for {Fore.RESET}[*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN} {password} {Fore.RESET}in [{time_elapsed:.2f}] seconds with [{attempt_count}] tries.")
-
+                            save_to_file(args.ip, args.service, user, password)
                             users.remove(user)
                             break
 
