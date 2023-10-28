@@ -4,7 +4,7 @@ Introducing FSK – your sophisticated brute-forcing tool tailored for SSH and F
 
 Key Features:
 
-1. Target Selection: The tool grants users the flexibility to pick between FTP and SSH services for their attack.
+1. Target Selection: The tool grants users the flexibility to pick between FTP and SSH services for their attack. FSKv3 now allows variable port number
 
 2. Password Options: Opt between using a predetermined wordlist or generating random passwords on-the-fly. If randomness entices you, FSK can concoct passwords ranging between 8 to 16 characters.
 
@@ -34,7 +34,7 @@ Key Features:
 
 ## Usage
 
-`python FSK.py --service [ftp/ssh] -w [path_to_wordlist] -u [path_to_user_list] --ip [target_ip_address]`
+`python FSK.py --service [ftp/ssh][Port} -w [path_to_wordlist] -u [path_to_user_list] --ip [target_ip_address]`
 
 To use random passwords use the flag `-r` or `--rand`
 
