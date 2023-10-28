@@ -309,7 +309,7 @@ if __name__ == '__main__':
                 f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Port: {Fore.YELLOW}{port}{Fore.RESET}")
 
             if not is_service_running(args.ip, port, service):
-                print(f"{Fore.RED}ERROR: No service running on the specified port.")
+                print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED}ERROR: No service running on the specified port.")
                 exit(1)
 
 
