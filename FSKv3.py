@@ -34,17 +34,18 @@ def generate_random_password_list(num_passwords=100000):
         return tmp.name
 
 
-def is_service_running(ip, port):
+def is_service_running(ip, port, service):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(5)  # Set a timeout for the connection attempt
+    sock.settimeout(2)  # Set a timeout in seconds
+    result = sock.connect_ex((ip, port))
+    sock.close()
 
-    try:
-        sock.connect((ip, port))
-        return True
-    except (ConnectionRefusedError, socket.timeout):
+    if service == 'ssh' and port == 22:
+        return result == 0
+    elif service == 'ftp' and port == 21:
+        return result == 0
+    else:
         return False
-    finally:
-        sock.close()
 
 def set_up_tor():
     print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} INITIALIZING TOR PROXY...")
@@ -287,7 +288,7 @@ if __name__ == '__main__':
             print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Service: {Fore.YELLOW}{service}{Fore.RESET}")
             print(
                 f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Port: {Fore.YELLOW}{port}{Fore.RESET}")
-            if not is_service_running(args.ip, port):
+            if not is_service_running(args.ip, port, service):
                 print(f"{Fore.RED}ERROR: No service running on the specified port.")
                 exit(1)
 
@@ -297,7 +298,9 @@ if __name__ == '__main__':
             print(
                 f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Port: {Fore.YELLOW}{port}{Fore.RESET}")
 
-
+            if not is_service_running(args.ip, port, service):
+                print(f"{Fore.RED}ERROR: No service running on the specified port.")
+                exit(1)
 
 
 
