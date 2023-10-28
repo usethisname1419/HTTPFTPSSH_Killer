@@ -35,17 +35,27 @@ def generate_random_password_list(num_passwords=100000):
 
 
 def is_service_running(ip, port, service):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(2)  # Set a timeout in seconds
-    result = sock.connect_ex((ip, port))
-    sock.close()
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(10)  # Set a timeout to 10 seconds
+        result = sock.connect_ex((ip, port))
+        sock.close()
 
-    if service == 'ssh' and port == 22:
-        return result == 0
-    elif service == 'ftp' and port == 21:
-        return result == 0
-    else:
+        if service == 'ssh' and port == 22:
+            return result == 0
+        elif service == 'ftp' and port == 21:
+            return result == 0
+        else:
+            return False
+
+    except socket.error as e:
+        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Socket error: {e}")
         return False
+
+    except socket.timeout:
+        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Connection timed out. No {service} service running on the specified port.")
+        return False
+
 
 def set_up_tor():
     print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} INITIALIZING TOR PROXY...")
