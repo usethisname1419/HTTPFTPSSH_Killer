@@ -20,13 +20,12 @@ def current_timestamp():
     return f"{Fore.WHITE}[{Fore.YELLOW}{time.strftime('%H:%M:%S', time.localtime())}{Fore.WHITE}]{Fore.RESET}"
 
 def generate_random_password_list(num_passwords=100000):
-    characters = string.ascii_letters + string.digits + string.punctuation
+    characters = string.ascii_letters + string.digits + "!@#$%^&*"
     passwords = set()
 
     while len(passwords) < num_passwords:
-        password = ''.join(random.choice(characters) for i in range(random.randint(8, 16)))
+        password = ''.join(random.choice(characters) for _ in range(random.randint(8, 18))) 
         passwords.add(password)
-
 
     with tempfile.NamedTemporaryFile(delete=False, mode='w') as tmp:
         for password in passwords:
@@ -37,7 +36,7 @@ def generate_random_password_list(num_passwords=100000):
 def is_service_running(ip, port, service):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(10)  # Set a timeout to 10 seconds
+        sock.settimeout(10)  
         result = sock.connect_ex((ip, port))
         sock.close()
 
@@ -119,9 +118,9 @@ def parse_arguments():
     else:
 
         if args.service[0] == 'ftp':
-            args.service = ('ftp', 21)  # Default FTP port is 21
+            args.service = ('ftp', 21) 
         elif args.service[0] == 'ssh':
-            args.service = ('ssh', 22)  # Default SSH port is 22
+            args.service = ('ssh', 22)  
     if args.wordlist and args.rand:
         parser.error("You can't use both -w and -r at the same time. Choose one.")
     elif not args.wordlist and not args.rand:
