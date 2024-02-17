@@ -36,6 +36,11 @@ Key Features:
 
 `python FSK.py --service [ftp/ssh][Port} -w [path_to_wordlist] -u [path_to_user_list] --ip [target_ip_address]`
 
+## FSKv2
+
+Uses the flag `-i` for number of tries per user name.
+V2 also retires once more if a connection is failed before moving on to next attempt
+
 Example:
 `python FSK.py --service ssh 24 -w /usr/share/wordlists/rockyou.txt -u users.txt --ip 172.16.1.83 --tor`
 
