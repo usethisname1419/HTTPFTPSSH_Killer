@@ -4,13 +4,13 @@ Introducing HFSK – your sophisticated brute-forcing tool tailored for HTTP, SS
 
 Key Features:
 
-1. Target Selection: The tool grants users the flexibility to pick between FTP and SSH services and choose port number for their attack. 
+1. Target Selection: The tool grants users the flexibility to pick between HTTP, FTP and SSH services and choose port number for their attack. 
 
-2. Password Options: Opt between using a predetermined wordlist or generating random passwords on-the-fly. If randomness entices you, FSK can concoct passwords ranging between 8 to 16 characters.
+2. Password Options: Opt between using a predetermined wordlist or generating random passwords on-the-fly. If randomness entices you, HFSK can concoct passwords ranging between 8 to 16 characters.
 
-3. Anonymization: Cover your tracks. With FSK, you can route your traffic through Tor or select from a personalized list of proxies.
+3. Anonymization: Cover your tracks. With HFSK, you can route your traffic through Tor or select from a personalized list of proxies.
 
-4. Detailed Reporting: Stay informed. Post-attack, FSK provides a concise report detailing the duration of the attack and the number of attempts made.
+4. Detailed Reporting: Stay informed. Post-attack, HFSK provides a concise report detailing the duration of the attack and the number of attempts made.
 
 
 
