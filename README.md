@@ -1,6 +1,6 @@
 # HTTPFTPSSH_Killer
 
-Introducing HFSK – your sophisticated brute-forcing tool tailored for HTTP, SSH and FTP services. Unlike conventional brute-forcing, FSK emulates the "password spraying" approach by attempting three passwords per user. Once it exhausts the user list, it resumes by cycling through the next set of three passwords. This reduces the chance of lockouts and lost connections. 
+Introducing HFSK – your sophisticated brute-forcing tool tailored for HTTP, SSH and FTP services. Unlike conventional brute-forcing, HFSK emulates the "password spraying" approach by attempting three passwords per user. Once it exhausts the user list, it resumes by cycling through the next set of three passwords. This reduces the chance of lockouts and lost connections. 
 
 Key Features:
 
