@@ -60,7 +60,7 @@ If you found this tool useful, consider supporting its development!
 
 **Ethereum (ETH)**: `0xB139a7f6A2398fd4F50BbaC9970da8BE57E6F539`
 
-**Bitcoin (BTC)**: `bc1qd3se09vq3wp63tfq5fgcpcmvy8ef7r09z8h5kd`
+**Bitcoin (BTC)**: `bc1qtezfajhysn6dut07m60vtg0s33jy8tqcvjqqzk`
 
 ---
 
