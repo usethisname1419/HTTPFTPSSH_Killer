@@ -50,10 +50,7 @@ You can load proxies from a list using the `--proxies` flag.
 
 You can also use the `--tor` flag to route your requests through Tor.
 
-### FSKv2
-
-Uses the flag `-i` or `--iter` for number of tries per user name.
-V2 also retires once more if a connection is failed before moving on to next attempt
+You can change the number of iterations for each attack block with the flag `-i` or `--iter` for number of tries per user name.
 
 
 ## Support
