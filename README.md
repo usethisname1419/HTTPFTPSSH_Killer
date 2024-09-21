@@ -65,4 +65,5 @@ If you found this tool useful, consider supporting its development!
 
 Designed and maintained by Derek Johnston.
 
+I hope you find this tool useful and I encourage you to share this tool among friends and colleuges!
 
