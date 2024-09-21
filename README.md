@@ -36,7 +36,7 @@ Key Features:
 
 `python HFSK.py --service [ftp/ssh/http][Port} -w [path_to_wordlist] -u [path_to_user_list] --ip [target_ip_address]`
 
-`http-post [pass=^PASS&users=^USERS^] failure-content-length/success-content-length [int] success/failure-pattern [str]`
+HTTP-POST-FORM ATTACK: `python HFSK.py --service http -w --ip [url/(vulnerable endpoint)] http-post [pass=^PAS^S&users=^USERS^] failure-content-length/success-content-length [int] success/failure-pattern [str]`
 
 
 Example:
