@@ -24,7 +24,7 @@ Key Features:
 
 `git clone https://github.com/usethisname1419/FTPSSH_Killer.git`
 
-`cd FTPSSH_Killer`
+`cd HTTPFTPSSH_Killer`
 
 
 3. Install the required libraries:
@@ -34,7 +34,7 @@ Key Features:
 
 ## Usage
 
-`python FSK.py --service [ftp/ssh/http][Port} -w [path_to_wordlist] -u [path_to_user_list] --ip [target_ip_address]`
+`python HFSK.py --service [ftp/ssh/http][Port} -w [path_to_wordlist] -u [path_to_user_list] --ip [target_ip_address]`
 
 `http-post [pass=^PASS&users=^USERS^] failure-content-length/success-content-length [int] success/failure-pattern [str]`
 
