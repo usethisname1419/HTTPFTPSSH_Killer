@@ -1,6 +1,6 @@
-# FTPSSH_Killer
+# HTTPFTPSSH_Killer
 
-Introducing FSK – your sophisticated brute-forcing tool tailored for SSH and FTP services. Unlike conventional brute-forcing, FSK emulates the "password spraying" approach by attempting three passwords per user. Once it exhausts the user list, it resumes by cycling through the next set of three passwords. This reduces the chance of lockouts and lost connections. 
+Introducing HFSK – your sophisticated brute-forcing tool tailored for HTTP, SSH and FTP services. Unlike conventional brute-forcing, FSK emulates the "password spraying" approach by attempting three passwords per user. Once it exhausts the user list, it resumes by cycling through the next set of three passwords. This reduces the chance of lockouts and lost connections. 
 
 Key Features:
 
@@ -34,7 +34,9 @@ Key Features:
 
 ## Usage
 
-`python FSK.py --service [ftp/ssh][Port} -w [path_to_wordlist] -u [path_to_user_list] --ip [target_ip_address]`
+`python FSK.py --service [ftp/ssh/http][Port} -w [path_to_wordlist] -u [path_to_user_list] --ip [target_ip_address]`
+
+`http-post [pass=^PASS&users=^USERS^] failure-content-length/success-content-length [int] success/failure-pattern [str]`
 
 
 Example:
