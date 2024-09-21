@@ -22,7 +22,7 @@ Key Features:
 
 1. Clone this repository:
 
-`git clone https://github.com/usethisname1419/FTPSSH_Killer.git`
+`git clone https://github.com/usethisname1419/HTTPFTPSSH_Killer.git`
 
 `cd HTTPFTPSSH_Killer`
 
