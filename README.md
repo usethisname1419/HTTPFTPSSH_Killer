@@ -38,7 +38,7 @@ Key Features:
 
 HTTP-POST-FORM ATTACK: 
 
-`python HFSK.py --service http -w --ip [url/(vulnerable endpoint)] http-post [pass=^PAS^S&users=^USERS^] failure-content-length/success-content-length [int] success/failure-pattern [str]`
+`python HFSK.py --service http -w --ip [url/(endpoint)] http-post [pass=^PAS^S&users=^USERS^] failure/success-content-length [int] success/failure-pattern [str]`
 
 
 Example:
