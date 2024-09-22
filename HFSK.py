@@ -568,7 +568,7 @@ if __name__ == '__main__':
 
         print(current_timestamp(),
               f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.BLUE} Brute force completed. HFSK - Written by: Derek Johnston\n")
-         print(current_timestamp(),
+        print(current_timestamp(),
               f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.BLUE} Donate BTC: bc1qtezfajhysn6dut07m60vtg0s33jy8tqcvjqqzk")
 
 
