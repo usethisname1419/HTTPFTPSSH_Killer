@@ -33,18 +33,25 @@ Key Features:
 
 `pip install -r requirements.txt`
 
+4. Install HFSKv2.py
+
+`chmod +x install.sh`
+
+`./install.sh`
+
+You can now call HFSKv2 from command line by typing "HFSK"
 
 ## Usage
 
-`python HFSK.py --service [ftp/ssh/http][Port} -w [path_to_wordlist] -u [path_to_user_list] --ip [target_ip_address]`
+`HFSK --service [ftp/ssh/http][Port} -w [path_to_wordlist] -u [path_to_user_list] --ip [target_ip_address]`
 
 HTTP-POST-FORM ATTACK: 
 
-`python HFSK.py --service http -w --ip [url/(endpoint)] http-post [pass=^PASS^S&users=^USERS^] failure/success-content-length [int] success/failure-pattern [str]`
+```HFSK --service http -w --ip [url/(endpoint)] http-post [pass=^PASS^S&users=^USERS^] failure/success-content-length [int] success/failure-pattern [str]```
 
 
 Example:
-`python FSK.py --service ssh 24 -w /usr/share/wordlists/rockyou.txt -u users.txt --ip 172.16.1.83 --tor`
+`HFSK --service ssh 24 -w /usr/share/wordlists/rockyou.txt -u users.txt --ip 172.16.1.83 --tor`
 
 To use random passwords use the flag `-r` or `--rand`
 
