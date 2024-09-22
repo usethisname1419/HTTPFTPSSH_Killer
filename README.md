@@ -13,6 +13,8 @@ Key Features:
 4. Detailed Reporting: Stay informed. Post-attack, HFSK provides a concise report detailing the duration of the attack and the number of attempts made.
 
 
+     NOTE: Does not support HTTPS
+
 
 ## Disclaimer
 
