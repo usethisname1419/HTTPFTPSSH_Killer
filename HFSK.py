@@ -425,9 +425,9 @@ if __name__ == '__main__':
                 f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Service: {Fore.YELLOW}{service}{Fore.RESET}")
             print(
                 f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Port: {Fore.YELLOW}{port}{Fore.RESET}")
-            # if not is_service_running(args.ip, port, service):
-            # print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RED}ERROR: No service running on the specified port.")
-            # exit(1)
+            if not is_service_running(args.ip, port, service):
+                print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RED}ERROR: No service running on the specified port.")
+            exit(1)
 
 
         else:
@@ -436,10 +436,10 @@ if __name__ == '__main__':
             print(
                 f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Port: {Fore.YELLOW}{port}{Fore.RESET}")
 
-            # if not is_service_running(args.ip, port, service):
-            #  print(
-            #     f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} ERROR: No service running on the specified port.")
-            #  exit(1)
+            if not is_service_running(args.ip, port, service):
+                print(
+                    f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} ERROR: No service running on the specified port.")
+            exit(1)
 
         proxies = []
         if args.proxies:
@@ -536,21 +536,12 @@ if __name__ == '__main__':
                                 "At least one of the following parameters must be specified for HTTP service: "
                                 "failure_content_length, success_content_length, success_pattern, failure_pattern."
                             )
-                        max_attempts = 3  # Number of passwords to try per round
-                        num_users = len(users)
-                        num_passwords = len(passwords)
 
                         # Total rounds needed
-                        for attempt in range((num_passwords + max_attempts - 1) // max_attempts):
-                            for user_index in range(num_users):
-                                user = users[user_index]
-                                # Calculate the starting index for this attempt
-                                start_index = attempt * max_attempts
-                                # Get the next three passwords
-                                password_slice = passwords[start_index:start_index + max_attempts]
-
-                                for password in password_slice:
-                                    result = http_attack(
+                        for user in users:
+                            password_slice = passwords[i:i + iterations]
+                            for password in password_slice:
+                                result = http_attack(
                                         args.ip, user, password,
                                         http_post_params=args.http_post,
                                         success_pattern=args.success_pattern,
@@ -560,19 +551,20 @@ if __name__ == '__main__':
                                         proxy_ip=None, proxy_port=None
                                     )
 
-                                    if result is True:
-                                        save_to_file(args.ip, 'http', user, password)
-                                        break  # Move to the next user if success
-                                    elif result is False:
-                                        print(
-                                            f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Failed attempt for user {Fore.YELLOW}{user}{Fore.RESET} with pass: {Fore.YELLOW}{password}")
-                                        time.sleep(0.3)
-                                    else:
-                                        print(
-                                            f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Unidentified response for user {Fore.YELLOW}{user}{Fore.RESET} with pass: {Fore.YELLOW}{password}")
-                                        break  # Break on unidentified response or error
+                                if result is True:
+                                    save_to_file(args.ip, args.service, user, password, attempt_count)
+                                    users.remove(user)
+                                    break  # Move to the next user if success
+                                elif result is False:
+                                    print(
+                                        f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Failed attempt for user {Fore.YELLOW}{user}{Fore.RESET} with pass: {Fore.YELLOW}{password}")
+                                    time.sleep(0.3)
+                                else:
+                                    print(
+                                        f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Unidentified response for user {Fore.YELLOW}{user}{Fore.RESET} with pass: {Fore.YELLOW}{password}")
+                                    break  # Break on unidentified response or error
 
-            first_iteration = False
+
 
         print(current_timestamp(),
               f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.BLUE} Brute force completed. FSK - Written by: Derek Johnston")
