@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from urllib.parse import urlparse
 import argparse
 import time
 import paramiko
@@ -33,34 +34,37 @@ def generate_random_password_list(num_passwords=100000):
             tmp.write(password + "\n")
         return tmp.name
 
+def extract_domain(ip_with_path):
+    """Extract the domain from the full URL."""
+    parsed_url = urlparse(f"http://{ip_with_path}")  
+    return parsed_url.netloc  
 
-def is_service_running(ip, port, service, retries=3, delay=2):
+def is_service_running(ip_with_path, port, service, retries=3, delay=2):
+    ip = extract_domain(ip_with_path)  # Extract the domain
     for attempt in range(retries):
         try:
+         
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(25)  # Adjust this value as needed
-            result = sock.connect_ex((ip, port))
-            sock.close()
-            print(f"Attempting to connect to {ip}:{port} for {service} - Result: {result}")
-
+            sock.settimeout(30) 
+          
+            result = sock.connect_ex((ip, port))  
+         
             if result == 0:  # Connection was successful
-                if service == 'ssh' and port == 22:
+                if service == 'http' and port == 80:
+                    return True 
+                elif service == 'ssh' and port == 22:
                     return True
                 elif service == 'ftp' and port == 21:
                     return True
-                elif service == 'http' and port == 80:
-                    if is_http_service_running(f"http://{ip}:{port}"):
-                        return True
-                    else:
-                        print(f"{Fore.RED}ERROR: No HTTP service running on {ip}:{port}.")
-                        return False
                 else:
-                    print(
-                        f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Unsupported service: {service} on port {port}")
+                    print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Unsupported service: {service} on port {port}")
                     return False
             else:
-                print(
-                    f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Connection failed with result code: {result}")
+                print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Connection failed with result code: {result}")
+
+        except socket.gaierror:
+            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} DNS resolution error for '{ip}'.")
+            return False
 
         except socket.error as e:
             print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Socket error: {e}")
@@ -68,18 +72,19 @@ def is_service_running(ip, port, service, retries=3, delay=2):
         except socket.timeout:
             print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Connection timed out.")
 
-        time.sleep(delay)  # Sleep after an attempt, before the next one
+        time.sleep(delay) 
 
     return False
 
-
 def is_http_service_running(url):
     try:
-        response = requests.get(url, timeout=10)  # You can adjust this timeout as well
+        response = requests.get(url, timeout=30)  
         return response.status_code == 200
     except requests.exceptions.RequestException as e:
         print(f"HTTP request failed: {e}")
         return False
+
+
 
 
 def set_up_tor():
@@ -124,7 +129,7 @@ def load_usernames_from_file(filename):
             return file.read().splitlines()
     except EOFError:
         print(
-            f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED}  EOFError encountered when reading usernames from file.")
+            f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} EOFError encountered when reading usernames from file.")
         return []
 
 
@@ -378,7 +383,7 @@ def load_proxies_from_file(filename):
             return [line.strip().split(":") for line in file.readlines()]
     except EOFError:
         print(
-            f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED}  EOFError encountered when reading proxies from file.")
+            f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} EOFError encountered when reading proxies from file.")
         return []
 
 
@@ -387,7 +392,7 @@ def get_port(args):
         try:
             return int(args.service[1])
         except ValueError:
-            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED}ERROR: Invalid port specified.")
+            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} ERROR: Invalid port specified.")
             exit(1)
     elif args.service[0] == 'ssh':
         return 22
@@ -427,7 +432,7 @@ if __name__ == '__main__':
                 f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Port: {Fore.YELLOW}{port}{Fore.RESET}")
             if not is_service_running(args.ip, port, service):
                 print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RED}ERROR: No service running on the specified port.")
-            exit(1)
+                exit(1)
 
 
         else:
@@ -439,7 +444,7 @@ if __name__ == '__main__':
             if not is_service_running(args.ip, port, service):
                 print(
                     f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} ERROR: No service running on the specified port.")
-            exit(1)
+                exit(1)
 
         proxies = []
         if args.proxies:
