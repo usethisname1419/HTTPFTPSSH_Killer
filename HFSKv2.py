@@ -482,6 +482,7 @@ if __name__ == '__main__':
                             print(current_timestamp(),
                                   f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for [*]{user}[*] in [{time_elapsed:.2f} seconds] with [{attempt_count} tries]. PASS = {Fore.BLUE}{password} ")
                             save_to_file(args.ip, args.service, user, password, attempt_count)
+                            users.remove(user)
                             break
 
                     elif 'ftp' in service:
@@ -489,6 +490,7 @@ if __name__ == '__main__':
                             print(current_timestamp(),
                                   f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for [*]{user}[*] in [{time_elapsed:.2f} seconds] with [{attempt_count} tries]. PASS = {Fore.BLUE}{password} ")
                             save_to_file(args.ip, args.service, user, password, attempt_count)
+                            users.remove(user)
                             break
 
                     elif 'http' in service:
@@ -509,6 +511,7 @@ if __name__ == '__main__':
 
                         if result is True:
                             save_to_file(args.ip, args.service, user, password, attempt_count)
+                            users.remove(user)
                             print(current_timestamp(),
                                   f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for [*]{user}[*] in [{time_elapsed:.2f} seconds] with [{attempt_count} tries]. PASS = {Fore.BLUE}{password} ")
                             break
