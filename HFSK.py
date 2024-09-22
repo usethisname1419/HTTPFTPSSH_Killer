@@ -35,43 +35,44 @@ def generate_random_password_list(num_passwords=100000):
 
 
 def is_service_running(ip, port, service, retries=3, delay=2):
-    for _ in range(retries):
+    for attempt in range(retries):
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(15)
+            sock.settimeout(25)  # Adjust this value as needed
             result = sock.connect_ex((ip, port))
             sock.close()
             print(f"Attempting to connect to {ip}:{port} for {service} - Result: {result}")
-            if service == 'ssh' and port == 22:
-                return result == 0
-            elif service == 'ftp' and port == 21:
-                return result == 0
-            elif service == 'http' and port == 80:
-                if not is_http_service_running(f"http://{args.ip}:{port}"):
-                    print(f"{Fore.RED}ERROR: No HTTP service running on {args.ip}:{port}.")
+
+            if result == 0:  # Connection was successful
+                if service == 'ssh' and port == 22:
+                    return True
+                elif service == 'ftp' and port == 21:
+                    return True
+                elif service == 'http' and port == 80:
+                    if is_http_service_running(f"http://{ip}:{port}"):
+                        return True
+                    else:
+                        print(f"{Fore.RED}ERROR: No HTTP service running on {ip}:{port}.")
+                        return False
+                else:
+                    print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Unsupported service: {service} on port {port}")
                     return False
-                return True
-
-
             else:
-                print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Unsupported service: {service} on port {port}")
-                return False
-
+                print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Connection failed with result code: {result}")
 
         except socket.error as e:
             print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Socket error: {e}")
-            return False
 
         except socket.timeout:
-            print(
-                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Connection timed out. No {service} service running on the specified port.")
-            return False
-        time.sleep(delay)
+            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Connection timed out.")
+
+        time.sleep(delay)  # Sleep after an attempt, before the next one
+
     return False
 
 def is_http_service_running(url):
     try:
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, timeout=10)  # You can adjust this timeout as well
         return response.status_code == 200
     except requests.exceptions.RequestException as e:
         print(f"HTTP request failed: {e}")
@@ -215,8 +216,8 @@ def http_attack(ip, user, password, http_post_params, success_pattern, failure_p
         data = http_post_params.replace('^USER^', user).replace('^PASS^', password)
         response = requests.post(f"http://{ip}", data=data, headers=headers, timeout=5)
         response_length = len(response.content)
-
-        print(f"debug: {response.text[:2000]}")
+        print(f"{Fore.WHITE}[{Fore.CYAN}HTTP-RESPONSE{Fore.WHITE}]{Fore.RESET}:CONTENT LENGTH: = {len(response.content)}\n")
+        print(f"{Fore.WHITE}[{Fore.CYAN}HTTP-RESPONSE{Fore.WHITE}]{Fore.RESET}: {response.text[:2000]}")
         print(
             f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} trying {Fore.YELLOW}{user}{Fore.RESET} with pass:[*]:{Fore.YELLOW}{password}")
 
@@ -418,9 +419,9 @@ if __name__ == '__main__':
                 f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Service: {Fore.YELLOW}{service}{Fore.RESET}")
             print(
                 f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Port: {Fore.YELLOW}{port}{Fore.RESET}")
-            if not is_service_running(args.ip, port, service):
-                print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RED}ERROR: No service running on the specified port.")
-                exit(1)
+            #if not is_service_running(args.ip, port, service):
+               # print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RED}ERROR: No service running on the specified port.")
+               # exit(1)
 
 
         else:
@@ -429,10 +430,10 @@ if __name__ == '__main__':
             print(
                 f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Port: {Fore.YELLOW}{port}{Fore.RESET}")
 
-            if not is_service_running(args.ip, port, service):
-                print(
-                    f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} ERROR: No service running on the specified port.")
-                exit(1)
+            #if not is_service_running(args.ip, port, service):
+              #  print(
+               #     f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} ERROR: No service running on the specified port.")
+              #  exit(1)
 
         proxies = []
         if args.proxies:
