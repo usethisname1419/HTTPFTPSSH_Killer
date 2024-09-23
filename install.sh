@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Check if Python 3 is installed
-if ! command -v python3 &> /dev/null; then
-    echo "Error: Python 3 is not installed. Please install Python 3 and try again."
-    exit 1
-fi
+# Define the script location
+SCRIPT_SOURCE="HFSKv2.py"  # Update this with the actual path to HFSKv2.py
 
-# Create a symbolic link for HFSK
-ln -s "$(pwd)/HFSKv2.py" /usr/local/bin/HFSK
+# Copy the script to /usr/local/bin
+sudo cp "$SCRIPT_SOURCE" /usr/local/bin/HFSK
 
-echo "Installation completed. You can now use 'HFSK' from the terminal."
+# Make the script executable
+sudo chmod +x /usr/local/bin/HFSK
+
+echo "HFSK installed successfully! You can run it by typing 'HFSK' from the terminal."
