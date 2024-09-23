@@ -139,7 +139,7 @@ def load_usernames_from_file(filename):
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Brute force against SSH and FTP services.')
     parser.add_argument('--service', nargs='+', required=True,
-                        help="Service to attack. (http,ftp,ssh) OPTIONAL: port number (ssh 2121, http 8080)")
+                        help="Service to attack. (http,ftp,ssh) OPTIONAL: port number (ssh 2222, http 8080)")
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-w', '--wordlist', help="Password Wordlist.")
