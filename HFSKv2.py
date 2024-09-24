@@ -230,7 +230,7 @@ def http_attack(ip, user, password, http_post_params, success_pattern, failure_p
         response = requests.post(f"http://{ip}", data=data, headers=headers, timeout=5)
         response_length = len(response.content)
         print(
-            f"\n{Fore.WHITE}[{Fore.CYAN}HTTP-RESPONSE{Fore.WHITE}]{Fore.RESET}:CONTENT LENGTH: = {len(response.content)}\n")
+            f"\n{Fore.WHITE}[{Fore.CYAN}HTTP-CONTENT-LENGTH{Fore.WHITE}]{Fore.RESET}: {len(response.content)}\n")
         print(f"{Fore.WHITE}[{Fore.CYAN}HTTP-RESPONSE{Fore.WHITE}]{Fore.RESET}: \n{response.text[:2000]}")
 
         if failure_content_length is not None and response_length == failure_content_length:
