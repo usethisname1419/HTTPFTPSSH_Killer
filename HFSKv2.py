@@ -557,7 +557,8 @@ if __name__ == '__main__':
 
             first_iteration = False
 
-        print(current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.BLUE} Brute force completed. FSK - Written by: Derek Johnston")
+        print(current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.BLUE} Attack complete. FSK - Written by: Derek Johnston")
+        print(current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.BLUE} Support HFSK. BTC: bc1qu9h3l4dgzrgpy0e26n98ytjzpxxeqw57vaprvq")
 
         if args.rand:
             os.remove(args.wordlist)
