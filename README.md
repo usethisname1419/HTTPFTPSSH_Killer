@@ -4,16 +4,16 @@ Introducing HFSK – your sophisticated brute-forcing tool tailored for HTTP, SS
 
 Key Features:
 
-1. Target Selection: The tool grants users the flexibility to pick between HTTP, FTP and SSH services and choose port number for their attack. 
+1. Target Selection: The tool grants users the flexibility to pick between HTTP(S), FTP and SSH services and choose port number for their attack. 
 
-2. Password Options: Opt between using a predetermined wordlist or generating random passwords on-the-fly. If randomness entices you, HFSK can concoct passwords ranging between 8 to 16 characters.
+2. Password Options: Opt between using a predetermined wordlist or generating random passwords on-the-fly. If randomness entices you, HFSK can concoct passwords using `--rand 8 16` for passwords between 8 and 16 or specify any min and max length you desire.
 
 3. Anonymization: Cover your tracks. With HFSK, you can route your traffic through Tor or select from a personalized list of proxies.
 
 4. Detailed Reporting: Stay informed. Post-attack, HFSK provides a concise report detailing the duration of the attack and the number of attempts made.
 
+5. Resume your attack from last known state.
 
-     NOTE: Does not support HTTPS
 
 
 ## Disclaimer
@@ -33,17 +33,17 @@ Key Features:
 
 `pip install -r requirements.txt`
 
-4. Install HFSKv2.py
+4. Install HFSKv3.py
 
 `chmod +x install.sh`
 
 `./install.sh`
 
-You can now call HFSKv2 from command line by typing "HFSK"
+You can now call HFSKv3 from command line by typing "HFSK"
 
 ## Usage
 
-`HFSK --service [ftp/ssh/http][Port} -w [path_to_wordlist] -u [path_to_user_list] --ip [target_ip_address]`
+`HFSK --service [ftp/ssh/http][Port} -w [path_to_wordlist] --users [path_to_user_list] --ip [target_ip_address]`
 
 HTTP-POST-FORM ATTACK: 
 
@@ -51,15 +51,24 @@ HTTP-POST-FORM ATTACK:
 
 
 Example:
-`HFSK --service ssh 24 -w /usr/share/wordlists/rockyou.txt -u users.txt --ip 172.16.1.83 --tor`
+`HFSK --service ssh 2222 -w /usr/share/wordlists/rockyou.txt --users users.txt --ip 172.16.1.83 --tor`
 
-To use random passwords use the flag `-r` or `--rand`
+Supports services on any port ei: --service http 8080
+
+Supports single user `-u` and user list `--users`
+
+To use random passwords use the flag `-r` or `--rand` Enter min length and max length of random passwords ` -r 6 8` for passwords between 6 and 8 chars
 
 You can load proxies from a list using the `--proxies` flag. 
 
 You can also use the `--tor` flag to route your requests through Tor.
 
 You can change the number of iterations for each attack block with the flag `-i` or `--iter` for number of tries per user name.
+
+Http/Https attack supports random user-agents `--random-agent`
+
+Resume your attack from last known state `--resume`
+
 
 
 ## Support
