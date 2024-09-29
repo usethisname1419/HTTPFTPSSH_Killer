@@ -53,7 +53,7 @@ HTTP-POST-FORM ATTACK:
 Example:
 `HFSK --service ssh 2222 -w /usr/share/wordlists/rockyou.txt --users users.txt --ip 172.16.1.83 --tor`
 
-Supports services on any port ei: `--service http 8080`
+Supports services on any port. `--service http 8080`
 
 Supports single user `-u` and user list `--users`
 
