@@ -101,7 +101,7 @@ You can change the number of iterations for each attack block with the flag `-i`
 
 Http/Https attack supports random user-agents `--random-agent`
 
-Resume your attack from last known state `--resume`
+Resume your attack from last known state `--resume`(Include the same args as last attack)
 
 
 
