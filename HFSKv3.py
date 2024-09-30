@@ -85,7 +85,7 @@ def verbose_print(message):
         print(current_timestamp(), message)
 def is_service_running(ip_with_path, port, service, retries=3, delay=2):
     ip = extract_domain(ip_with_path)
-    verbose_print(f"Checking if {service.upper()} service is running on {ip}:{port}")# Extract the domain
+    verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}Checking if {service.upper()} service is running on {ip}:{port}")# Extract the domain
     for attempt in range(retries):
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -197,14 +197,14 @@ def load_progress():
         with open(STATE_FILE, 'r') as f:
             return json.load(f)
     else:
-        print(f"{Fore.RED}No progress file found. Starting from the beginning.{Fore.RESET}")
+        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED}No progress file found. Starting from the beginning.{Fore.RESET}")
         return None
 
 
 def delete_progress_file():
     if os.path.exists(STATE_FILE):
         os.remove(STATE_FILE)
-        print(f"{Fore.YELLOW}Progress file deleted.{Fore.RESET}")
+        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.YELLOW}Progress file deleted.{Fore.RESET}")
 
 
 def parse_arguments():
@@ -325,14 +325,14 @@ def http_attack(ip, user, password, http_post_params, success_pattern, failure_p
         if args.random_agent:
             selected_agent = random.choice(USER_AGENTS)
             headers['User-Agent'] = selected_agent
-            verbose_print(f"Using random User-Agent: {selected_agent}")
+            verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}Using random User-Agent: {selected_agent}")
 
         data = http_post_params.replace('^USER^', user).replace('^PASS^', password)
-        verbose_print(f"Sending HTTP POST request to {ip} with data: {data}")
+        verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}Sending HTTP POST request to {ip} with data: {data}")
         response = requests.post(f"http://{ip}", data=data, headers=headers, timeout=5, verify=False)
         response_length = len(response.content)
-        print(f"\n{Fore.WHITE}[{Fore.CYAN}HTTP-CONTENT-LENGTH{Fore.WHITE}]{Fore.RESET}: {len(response.content)}\n")
-        print(f"{Fore.WHITE}[{Fore.CYAN}HTTP-RESPONSE{Fore.WHITE}]{Fore.RESET}: \n{response.text[:2000]}")
+        verbose_print(f"\n{Fore.WHITE}[{Fore.CYAN}HTTP-CONTENT-LENGTH{Fore.WHITE}]{Fore.RESET}: {len(response.content)}\n")
+        verbose_print(f"{Fore.WHITE}[{Fore.CYAN}HTTP-RESPONSE{Fore.WHITE}]{Fore.RESET}: \n{response.text[:2000]}")
 
         if failure_content_length is not None and response_length == failure_content_length:
             return False  # Indicates failure
@@ -637,7 +637,7 @@ if __name__ == '__main__':
         if args.resume:
             saved_state = load_progress()
             if saved_state:
-                print(f"{Fore.YELLOW}Resuming from the last saved state...{Fore.RESET}")
+                print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.YELLOW}Resuming from the last saved state...{Fore.RESET}")
                 attempt_count = saved_state['attempt_count']
                 passwords = saved_state['remaining_passwords']
                 users = saved_state['remaining_users']
