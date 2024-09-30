@@ -44,20 +44,35 @@ You can now call HFSKv3 from command line by typing "HFSK"
 ## Options
 
 --service
+
 --ip
+
 --tor
+
 --proxies
+
 -w --wordlist
+
 -r --rand
+
 -i --iterations
+
 -u --users
+
 --http-post
+
 --failure-content-length
+
 --success-content-length
+
 --failure-pattern
+
 --success-pattern
+
 --random-agent
+
 --verbose
+
 --resume
 
 ## Usage
