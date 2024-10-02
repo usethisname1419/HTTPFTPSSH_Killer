@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the script location
-SCRIPT_SOURCE="HFSKv3.py"  # Update this with the actual path to HFSKv2.py
+SCRIPT_SOURCE="HFSKv4.py"  # Update this with the actual path to HFSKv2.py
 
 # Copy the script to /usr/local/bin
 sudo cp "$SCRIPT_SOURCE" /usr/local/bin/HFSK
