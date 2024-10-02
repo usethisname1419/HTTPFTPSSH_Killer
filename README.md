@@ -33,7 +33,7 @@ Key Features:
 
 `pip install -r requirements.txt`
 
-4. Install HFSKv3.py
+4. Install HFSKv4.py
 
 `chmod +x install.sh`
 
