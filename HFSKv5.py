@@ -607,7 +607,7 @@ def get_port(args):
         return None
 
 def pause_attack(pause_after_minutes, pause_duration_minutes):
-    verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Pausing attack for {pause_duration_minutes} minutes.", level=1)
+    verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Pausing attack for {pause_duration_minutes} minute(s).", level=1)
     time.sleep(pause_duration_minutes * 60)  # Sleep for pause_duration_minutes in seconds
  
 
@@ -655,7 +655,7 @@ if __name__ == '__main__':
                     break
 
         if args.rand:
-            verbose_print(f"Random passwords with min: {min_length} and max: {max_length}", level=2)
+            verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Random passwords with min: {min_length} and max: {max_length}", level=2)
             min_len = args.rand[0]
             max_len = args.rand[1]
             args.wordlist = generate_random_password_list(min_length=min_len, max_length=max_len)
@@ -706,7 +706,7 @@ if __name__ == '__main__':
                 passwords = saved_state['remaining_passwords']
                 users = saved_state['remaining_users']
             else:
-                print(f"{Fore.RED}No saved state found, starting from the beginning.{Fore.RESET}")
+                print(f"{Fore.RED} No saved state found, starting from the beginning.{Fore.RESET}")
 
         password_chunk_size = 3
         first_iteration = True
