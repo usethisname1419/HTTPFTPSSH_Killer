@@ -237,7 +237,10 @@ def parse_arguments():
     parser.add_argument('--failure-content-length', type=int, help="Content length indicating failed login.")
     parser.add_argument('--success-pattern', type=str, help="Pattern indicating a successful login.")
     parser.add_argument('--failure-pattern', type=str, help="Pattern indicating a failed login.")
-    parser.add_argument('-ss', '--session', action=store_true, help="Force new sessions")
+    parser.add_argument('-ss', '--sessions', action=store_true, help="Force new sessions")
+    parser.add_argument('--pause', nargs=2, type=int, metavar=('MINUTES_BEFORE_PAUSE', 'PAUSE_DURATION'),
+                        help='Pause the attack after the first specified number of minutes and pause for the second specified number of minutes.')
+
     args = parser.parse_args()
     iterations = args.iterations
 
@@ -574,6 +577,12 @@ def get_port(args):
     else:
         return None
 
+def pause_attack(pause_after_minutes, pause_duration_minutes):
+    print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Pausing attack for {pause_duration_minutes} minutes.")
+    time.sleep(pause_duration_minutes * 60)  # Sleep for pause_duration_minutes in seconds
+    print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Resuming attack after {pause_duration_minutes} minutes.")
+
+
 if __name__ == '__main__':
     try:
         print(current_timestamp(), f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} STARTING ATTACK...")
@@ -585,6 +594,13 @@ if __name__ == '__main__':
 
         service = args.service[0]
         port = get_port(args)
+        pause_after_minutes = None
+        pause_duration_minutes = None
+        if args.pause:
+            pause_after_minutes = args.pause[0]
+            pause_duration_minutes = args.pause[1]
+            next_pause_time = time.time() + pause_after_minutes * 60  # Calculate when to trigger the pause
+
         if args.service[0] == 'https':
             if not args.http_post:
                 raise ValueError(
@@ -663,6 +679,9 @@ if __name__ == '__main__':
         ssh_auth_type_checked = False
         for i in range(0, len(passwords), password_chunk_size):
             for idx, user in enumerate(users):
+                if pause_after_minutes and time.time() >= next_pause_time:
+                    pause_attack(pause_after_minutes, pause_duration_minutes)
+                    next_pause_time = time.time() + pause_after_minutes * 60  # 
                 if args.session:
                     if len(users) > 1 and idx == 0:  # First user in list case
                         print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Creating a new session for the first user: {user}")
