@@ -87,7 +87,7 @@ def verbose_print(message, level=1):
 
 def is_service_running(ip_with_path, port, service, retries=3, delay=2):
     ip = extract_domain(ip_with_path)
-    verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}Checking if {service.upper()} service is running on {ip}:{port}")# Extract the domain
+    verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}Checking if {service.upper()} service is running on {ip}:{port}", level=1)# Extract the domain
     for attempt in range(retries):
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -125,7 +125,7 @@ def is_service_running(ip_with_path, port, service, retries=3, delay=2):
 
 
 def is_http_service_running(url):
-    verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Checking if service running...", level=2)
+    verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Checking if http(s) service running...", level=2)
     try:
         response = requests.get(url, timeout=30)
         return response.status_code == 200
