@@ -658,7 +658,7 @@ if __name__ == '__main__':
             
             min_len = args.rand[0]
             max_len = args.rand[1]
-            verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Random passwords with min: {min_length} and max: {max_length}", level=2)
+            verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Random passwords with min: {min_len} and max: {max_len}", level=2)
             args.wordlist = generate_random_password_list(min_length=min_len, max_length=max_len)
        
         if args.tor and args.proxies:
