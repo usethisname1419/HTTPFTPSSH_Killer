@@ -382,6 +382,8 @@ def http_attack(ip, user, password, http_post_params, success_pattern, failure_p
             verbose_print(
                   f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Success for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}", level=1)
             return True  # Indicates success
+        else:
+            return False
 
         if failure_pattern and failure_pattern in response.text:
             return False  # Indicates failure
@@ -445,6 +447,8 @@ def https_attack(ip, user, password, https_post_params, success_pattern, failure
             verbose_print(
                 f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Success for user {user} with password: {password}", level=1)
             return True  # Indicates success
+        else:
+            return False
 
         # Failure based on pattern match in response body
         if failure_pattern and failure_pattern in response.text:
