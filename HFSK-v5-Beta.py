@@ -242,7 +242,7 @@ def parse_arguments():
     parser.add_argument('--failure-content-length', type=int, help="Content length indicating failed login.")
     parser.add_argument('--success-pattern', type=str, help="Pattern indicating a successful login.")
     parser.add_argument('--failure-pattern', type=str, help="Pattern indicating a failed login.")
-    parser.add_argument('-ss', '--sessions', action=store_true, help="Force new sessions")
+    parser.add_argument('-ss', '--sessions', action='store_tru', help="Force new sessions")
     parser.add_argument('-ps', '--pause', nargs=2, type=int, metavar=('MINUTES_BEFORE_PAUSE', 'PAUSE_DURATION'),
                         help='Pause the attack after the first specified number of minutes and pause for the second specified number of minutes.')
 
