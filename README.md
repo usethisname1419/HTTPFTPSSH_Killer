@@ -10,9 +10,20 @@ Key Features:
 
 3. Anonymization: Cover your tracks. With HFSK, you can route your traffic through Tor or select from a personalized list of proxies.
 
-4. Detailed Reporting: Stay informed. Post-attack, HFSK provides a concise report detailing the duration of the attack and the number of attempts made.
+4. Support random user-agents 
 
-5. Resume your attack from last known state.
+5. Detailed Reporting: Stay informed. Post-attack, HFSK provides a concise report detailing the duration of the attack and the number of attempts made.
+
+6. Resume your attack from last known state.
+
+7. Pause function to set when to pause and how long --pause 3 1 [pauses every 3 minutes for 1 minute]
+
+8. Verbosity levels 1 and 2 for detailed messages
+
+9. Force new session creation with --sessions
+
+
+HFSK is designed to reduce the chance of lockouts 
 
 
 
@@ -33,23 +44,23 @@ Key Features:
 
 `pip install -r requirements.txt`
 
-4. Install HFSKv4.py
+4. Install HFSKv5.py
 
 `chmod +x install.sh`
 
 `./install.sh`
 
-You can now call HFSKv3 from command line by typing "HFSK"
+You can now call HFSKv5 from command line by typing "HFSK"
 
 ## Options
 
---service
+-sv --service
 
 --ip
 
 --tor
 
---proxies
+-px --proxies
 
 -w --wordlist
 
@@ -69,11 +80,15 @@ You can now call HFSKv3 from command line by typing "HFSK"
 
 --success-pattern
 
---random-agent
+-ra --random-agent
 
 --verbose
 
 --resume
+
+-ps --pause
+
+-ss --sessions
 
 ## Usage
 
