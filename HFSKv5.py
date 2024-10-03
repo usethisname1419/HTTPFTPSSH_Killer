@@ -724,10 +724,10 @@ if __name__ == '__main__':
                 if args.sessions:
                     
                     if len(users) > 1 and idx == 0:  # First user in list case
-                        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Creating a new session for the first user: {user}")
+                        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Creating a new session..")
                         session = create_new_session()  # Your session creation logic here
                     elif len(users) == 1 and idx % 12 == 0 and idx > 0:  # Single user case
-                        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Creating a new session for the user: {user} (every 12 attempts)")
+                        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Creating a new session..")
                         session = create_new_session()  # Your session creation logic here
                 proxy_ip, proxy_port = next(proxy_gen) if proxy_gen else (None, None)
 
