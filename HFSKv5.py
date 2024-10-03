@@ -63,7 +63,7 @@ def current_timestamp():
 # Modified password generator to support a range of lengths for --rand
 def generate_random_password_list(num_passwords=100000, min_length=8, max_length=18):
     characters = string.ascii_letters + string.digits + "!@#$%^&*"
-    verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET}{Fore.GREEN} Generating password list...", level=2)
+    verbose_print(f"{Fore.WHITE}[{Fore.YELLOW}INFO{Fore.WHITE}]{Fore.RESET} Generating password list...", level=2)
     passwords = set()
 
     while len(passwords) < num_passwords:
