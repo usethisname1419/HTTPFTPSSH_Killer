@@ -22,6 +22,8 @@ Key Features:
 
 9. Force new session creation with --sessions
 
+    HFSKv6 Supports loading CSRF tokens and cookies from a file `--csrf` `--cookie`
+
 
 HFSK is designed to reduce the chance of lockouts 
 
@@ -89,6 +91,11 @@ You can now call HFSKv5 from command line by typing "HFSK"
 -ps --pause
 
 -ss --sessions
+
+V6
+
+--csrf
+--cookie
 
 ## Usage
 
