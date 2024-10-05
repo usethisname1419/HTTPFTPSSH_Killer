@@ -92,9 +92,10 @@ You can now call HFSKv5 from command line by typing "HFSK"
 
 -ss --sessions
 
-V6
+=============V6===============
 
 --csrf
+
 --cookie
 
 ## Usage
