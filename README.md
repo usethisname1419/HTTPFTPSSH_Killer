@@ -26,7 +26,7 @@ Key Features:
 
 11. Load CSRF token `--csrf`
 
-12. Add common preffixes/suffixes to password attempts `--suffixes` `--preffixes`
+12. Add common preffixes/suffixes to password attempts `--suffix` `--prefixes`
 
 
 HFSK is designed to reduce the chance of lockouts 
@@ -98,9 +98,9 @@ You can now call HFSKv6 from command line by typing "HFSK"
 
 -ss --sessions
 
---suffixes
+--suffix
 
---preffixes
+--prefix
 
 --csrf
 
