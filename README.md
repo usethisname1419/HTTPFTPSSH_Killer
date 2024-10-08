@@ -131,6 +131,14 @@ You can change the number of iterations for each attack block with the flag `-i`
 
 Http/Https attack supports random user-agents `--random-agent`
 
+Check HTTP(S) success with content-length, status-codes, response-patterns `--status code`, `--failure/success-conten-length`, `--failure/success-pattern`
+
+Add suffix/prefix to password attempts `--suffix`, `--prefix`
+
+Force sessions `--sessions`
+
+Use CSRF token for HTTP(S) `--csrf`
+
 Resume your attack from last known state `--resume`(Include the same args as last attack)
 
 
