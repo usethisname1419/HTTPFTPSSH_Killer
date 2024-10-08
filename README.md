@@ -8,23 +8,25 @@ Key Features:
 
 2. Password Options: Opt between using a predetermined wordlist or generating random passwords on-the-fly. If randomness entices you, HFSK can concoct passwords using `--rand 8 16` for passwords between 8 and 16 or specify any min and max length you desire.
 
-3. Anonymization: Cover your tracks. With HFSK, you can route your traffic through Tor or select from a personalized list of proxies.
+3. Different methods to determine success for HTTP(s) - `--status-code`, `--failure-content-length`, `--success-content-length`, `--failure-pattern`, `--success-pattern`
 
-4. Support random user-agents 
+4. Anonymization: Cover your tracks. With HFSK, you can route your traffic through Tor or select from a personalized list of proxies.
 
-5. Detailed Reporting: Stay informed. Post-attack, HFSK provides a concise report detailing the duration of the attack and the number of attempts made.
+5. Support random user-agents 
 
-6. Resume your attack from last known state.
+6. Detailed Reporting: Stay informed. Post-attack, HFSK provides a concise report detailing the duration of the attack and the number of attempts made.
 
-7. Pause function to set when to pause and how long --pause 3 1 [pauses every 3 minutes for 1 minute]
+7. Resume your attack from last known state.
 
-8. Verbosity levels 1 and 2 for detailed messages
+8. Pause function to set when to pause and how long --pause 3 1 [pauses every 3 minutes for 1 minute]
 
-9. Force new session creation with --sessions
+9. Verbosity levels 1 and 2 for detailed messages
 
-10. Load CSRF token `--csrf`
+10. Force new session creation with --sessions
 
-11. Add common preffixes/suffixes to password attempts `--suffixes` `--preffixes`
+11. Load CSRF token `--csrf`
+
+12. Add common preffixes/suffixes to password attempts `--suffixes` `--preffixes`
 
 
 HFSK is designed to reduce the chance of lockouts 
@@ -83,6 +85,8 @@ You can now call HFSKv6 from command line by typing "HFSK"
 --failure-pattern
 
 --success-pattern
+
+--status-code
 
 -ra --random-agent
 
