@@ -229,7 +229,7 @@ def delete_progress_file():
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description='Brute force against SSH and FTP services.')
+    parser = argparse.ArgumentParser(description='Brute force against SSH and FTP and HTTP(S) services.')
     parser.add_argument('-sv', '--service', nargs='+', required=True,
                         help="Service to attack. (http,ftp,ssh) OPTIONAL: port number (ssh 2222, http 8080)")
 
