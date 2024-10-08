@@ -137,7 +137,7 @@ Add suffix/prefix to password attempts `--suffix`, `--prefix`
 
 Force sessions `--sessions`
 
-Use CSRF token for HTTP(S) `--csrf`
+Use CSRF token for HTTP(S) `--csrf` - `--http-post "token=^CSRF^&login=^USER^&pwd=^PASS^"`
 
 Resume your attack from last known state `--resume`(Include the same args as last attack)
 
