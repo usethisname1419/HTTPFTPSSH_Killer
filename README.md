@@ -26,7 +26,7 @@ Key Features:
 
 11. Load CSRF token `--csrf`
 
-12. Add common preffixes/suffixes to password attempts `--suffix` `--prefixes`
+12. Add common preffixes/suffixes to password attempts `--suffix` `--prefix`
 
 
 HFSK is designed to reduce the chance of lockouts 
