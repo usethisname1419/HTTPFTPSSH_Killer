@@ -22,7 +22,9 @@ Key Features:
 
 9. Force new session creation with --sessions
 
-    HFSKv6 Supports loading CSRF tokens and cookies from a file `--csrf` `--cookie`
+10. Load CSRF token `--csrf`
+
+11. Add common preffixes/suffixes to password attempts `--suffixes` `--preffixes`
 
 
 HFSK is designed to reduce the chance of lockouts 
@@ -46,13 +48,13 @@ HFSK is designed to reduce the chance of lockouts
 
 `pip install -r requirements.txt`
 
-4. Install HFSKv5.py
+4. Install HFSKv6.py
 
 `chmod +x install.sh`
 
 `./install.sh`
 
-You can now call HFSKv5 from command line by typing "HFSK"
+You can now call HFSKv6 from command line by typing "HFSK"
 
 ## Options
 
@@ -92,11 +94,12 @@ You can now call HFSKv5 from command line by typing "HFSK"
 
 -ss --sessions
 
-=============V6===============
+--suffixes
+
+--preffixes
 
 --csrf
 
---cookie
 
 ## Usage
 
