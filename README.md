@@ -157,3 +157,5 @@ Designed and maintained by Derek Johnston.
 
 I hope you find this tool useful and I encourage you to share this tool among friends and colleuges!
 
+Future plans: i plan to make the suffix/prefix try every combo on each word before moving on to the next one. I also plan to create a fast mode where it uses as many threads as there is interations for a faster attack. please support.
+
