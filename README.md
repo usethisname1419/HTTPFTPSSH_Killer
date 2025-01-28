@@ -104,6 +104,10 @@ You can now call HFSKv6 from command line by typing "HFSK"
 
 --csrf
 
+HFSKv7
+
+--fast-mode = Run all interations at same time using threading (experimental)
+
 
 ## Usage
 
